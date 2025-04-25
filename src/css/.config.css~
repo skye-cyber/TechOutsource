@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.scrollbar-hide {
+    /* Hide scrollbar for Chrome, Safari, and Edge */
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
+    overflow: -moz-scrollbars-none; /* Older Firefox */
+    overflow-y: scroll; /* Add this to ensure the content is scrollable */
+    &::-webkit-scrollbar {
+        display: none;  /* Hide scrollbar for Chrome, Safari, and Edge */
+    }
+}
+/* global.css or within a Tailwind plugin */
+@layer utilities {
+    h1, h2, h3, h4, h5, h6  {
+        margin: 0; /* Reset margin for consistency */
+    }
+
+    h1 {
+        font-size: 2.5rem; /* 40px */
+        font-weight: 700;  /* bold */
+    }
+
+    h2 {
+        font-size: 2rem;   /* 32px */
+        font-weight: 600;  /* semi-bold */
+    }
+
+    h3 {
+        font-size: 1.75rem; /* 28px */
+        font-weight: 500;   /* medium */
+    }
+
+    h4 {
+        font-size: 1.5rem;  /* 24px */
+        font-weight: 400;   /* normal */
+    }
+
+    h5 {
+        font-size: 1.25rem; /* 20px */
+        font-weight: 300;   /* light */
+    }
+
+    h6 {
+        font-size: 1rem;    /* 16px */
+        font-weight: 200;   /* extra light */
+    }
+}
+.pulse {
+    display: inline-block;
+    transition: transform 0.3s ease-in-out;
+}
+
+.pulse:hover {
+    transform: scale(1.1);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.5);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.pulse-hover {
+    display: inline-block;
+}
+
+.pulse-hover:hover {
+    animation: pulse 1s infinite;
+}
+/* Reset default scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+/* Light theme scrollbar */
+::-webkit-scrollbar-track {
+    background:#2c2c2c;
+    border-radius: 4px;
+    opacity:0.5;
+}
+
+.dark ::-webkit-scrollbar-track {
+    background:#24486b;
+    border-radius: 4px;
+    opacity:0.5;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(145deg, #00aa7f, #aaffff, #00aaff);
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555500;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: #ffffff;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(135deg, #aa55ff, #aaaaff, #ff55ff);
+}
+
+/* Optional: Add transitions for more natural feel */
+ython.assistant-unused
+.note:-webkit-scrollbar {
+    scroll-behavior: smooth;
+}
+
+/* Simulate a placeholder on the contenteditable div */
+#userInput:empty:before {
+content: attr(data-placeholder);
+color: #9CA3AF;
+}
+/* Always ensure an extra empty row at the bottom */
+#userInput::after {
+content: "\A"; /* Inserts a newline */
+white-space: pre;
+display: block;
+visibility: hidden;
+height: 2.4em; /* Adjust this value to match the height of an empty row */
+}
+
+
+@keyframes modalEnter {
+    from {
+        transform: scale(0);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes modalExit {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0);
+        opacity: 0;
+    }
+}
+
+.animate-enter {
+    animation: modalEnter 0.4s ease-out forwards;
+}
+
+.animate-exit {
+    animation: modalExit 0.3s ease-in forwards;
+}
+
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInUp {
+    from { transform: translateY(30px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(-30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInLeft {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 1s ease forwards;
+}
+
+.animate-slideInUp {
+    animation: slideInUp 1s ease forwards;
+}
+
+.animate-slideInRight {
+    animation: slideInRight 1s ease forwards;
+}
+
+.animate-slideInLeft {
+    animation: slideInLeft 1s ease forwards;
+}
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+
+
