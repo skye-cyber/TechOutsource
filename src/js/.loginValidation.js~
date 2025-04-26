@@ -1,0 +1,82 @@
+// src/js/loginValidation.js
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passInput = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const passError = document.getElementById('passwordError');
+
+    const shakeClass = 'animate-shake';
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+
+        // clear old errors
+        emailError.textContent = '';
+        passError.textContent = '';
+
+        let valid = true;
+        const emailVal = emailInput.value.trim();
+        const passVal = passInput.value;
+
+        // Client-side validation
+        if (!emailVal) {
+            emailError.textContent = 'Email or username is required';
+            triggerShake(emailInput);
+            valid = false;
+        } else if (emailVal.includes('@') && !emailPattern.test(emailVal)) {
+            emailError.textContent = 'Please enter a valid email address';
+            triggerShake(emailInput);
+            valid = false;
+        }
+
+        if (!passVal) {
+            passError.textContent = 'Password is required';
+            triggerShake(passInput);
+            valid = false;
+        } else if (passVal.length < 6) {
+            passError.textContent = 'Password must be at least 6 characters';
+            triggerShake(passInput);
+            valid = false;
+        }
+
+        if (!valid) return;
+
+        // Prepare form data for AJAX
+        const formData = new FormData(form);
+        formData.append('login', '1'); // ensure PHP sees the login submit
+
+        try {
+            const resp = await fetch(loginForm., {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            console.log(resp)
+            const data = await resp.json();
+
+
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else {
+                // server-side error message
+                // put it into emailError (or create a top-level error area)
+                emailError.textContent = data.errorMsg || 'Login failed';
+                triggerShake(emailInput);
+                triggerShake(passInput);
+            }
+        } catch (err) {
+            console.error('Login AJAX error', err);
+            emailError.textContent = `Server error — ${err}`;
+        }
+    });
+
+    function triggerShake(el) {
+        el.classList.add(shakeClass);
+        el.addEventListener('animationend', () => {
+            el.classList.remove(shakeClass);
+        }, { once: true });
+    }
+});

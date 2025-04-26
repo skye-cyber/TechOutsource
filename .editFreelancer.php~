@@ -33,7 +33,7 @@ if(isset($_POST["editFreelancer"])){
 	$contactNo=test_input($_POST["contactNo"]);
 	$gender=test_input($_POST["gender"]);
 	$birthdate=test_input($_POST["birthdate"]);
-	$address=test_input($_POST["country"]);
+	$address=test_input($_POST["address"]);
 	$prof_title=test_input($_POST["prof_title"]);
 	$skills=test_input($_POST["skills"]);
 	$profile_sum=test_input($_POST["profile_sum"]);

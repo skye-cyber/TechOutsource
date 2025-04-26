@@ -1,0 +1,31 @@
+<?php
+error_reporting(E_ALL);
+
+if (session_status() === PHP_SESSION_NONE) {
+    ini_set('display_errors', 1);
+    // Set session lifetime to 3 minutes
+    ini_set('session.gc_maxlifetime', 180);
+    session_start();
+}
+
+header("location: registration/login.html");
+
+// Check if session has expired
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > 180)) {
+    // Session expired
+    session_unset();
+    session_destroy();
+}
+$_SESSION['LAST_ACTIVITY'] = time(); // Update last activity timestamp
+
+// Create database connection
+$conn = new mysqli("localhost", "freelancer", "admin99", "TechOutsource");
+
+// Check database connection
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+// Don't close connection here, other scripts may need it
+// $conn->close();
+?>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login - Therapeutic</title>
-    <script src='../src/js/script.js'></script>
     <script src='../src/js/packed_animator.js'></script>
     <link rel="stylesheet" href="../src/css/styles.css">
   </head>

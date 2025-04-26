@@ -67,58 +67,5 @@ if (isset($_POST["register"])) {
 	}
 }
 
-if (isset($_POST["login"])) {
-	session_unset();
-	$username = test_input($_POST["username"]);
-	$password = test_input($_POST["password"]);
-	$usertype = test_input($_POST["usertype"]);
-
-	if ($usertype == "freelancer") {
-		$sql = "SELECT * FROM freelancer WHERE username = '$username' AND password = '$password'";
-		$result = $conn->query($sql);
-		if ($result->num_rows == 1) {
-			$_SESSION["Username"] = $username;
-			$_SESSION["Usertype"] = 1;
-			unset($_SESSION["errorMsg"]);
-			header("location: freelancerProfile.php");
-		} else {
-			$_SESSION["errorMsg"] = "username/password is incorrect";
-		}
-	} else {
-		$sql = "SELECT * FROM employer WHERE username = '$username' AND password = '$password'";
-		$result = $conn->query($sql);
-		if ($result->num_rows == 1) {
-			$_SESSION["Username"] = $username;
-			$_SESSION["Usertype"] = 2;
-			unset($_SESSION["errorMsg"]);
-			header("location: employerProfile.php");
-		} else {
-			$_SESSION["errorMsg"] = "username/password is incorrect";
-		}
-	}
-}
-
-
-if (isset($_SESSION["errorMsg"])) {
-	$errorMsg = $_SESSION["errorMsg"];
-	unset($_SESSION["errorMsg"]);
-} else {
-	$errorMsg = "";
-}
-
-if (isset($_SESSION["errorMsg2"])) {
-	$errorMsg2 = $_SESSION["errorMsg2"];
-	unset($_SESSION["errorMsg2"]);
-} else {
-	$errorMsg2 = "";
-}
-
-function test_input($data)
-{
-	$data = trim($data);
-	$data = stripslashes($data);
-	$data = htmlspecialchars($data);
-	return $data;
-}
-
 //$conn->close();
+?>

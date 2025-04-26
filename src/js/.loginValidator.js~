@@ -1,0 +1,78 @@
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passInput = document.getElementById('password');
+    const emailError = document.getElementById('emailError');
+    const passError = document.getElementById('passwordError');
+    const usertype = document.querySelector('input[name="usertype"]:checked');
+    const usertypeError = document.getElementById('usertypeError');
+    const shakeClass = 'animate-shake';
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    form.addEventListener('submit', async e => {
+        e.preventDefault();
+
+        emailError.textContent = '';
+        passError.textContent = '';
+        let valid = true;
+        const emailVal = emailInput.value.trim();
+        const passVal = passInput.value;
+
+        if (!usertype) {
+            valid = false;
+            usertypeError.textContent = 'Please select user type'
+        }
+
+        if (!emailVal) {
+            emailError.textContent = 'Email or username is required';
+            triggerShake(emailInput);
+            valid = false;
+        } else if (emailVal.includes('@') && !emailPattern.test(emailVal)) {
+            emailError.textContent = 'Please enter a valid email address';
+            triggerShake(emailInput);
+            valid = false;
+        }
+
+        if (!passVal) {
+            passError.textContent = 'Password is required';
+            triggerShake(passInput);
+            valid = false;
+        } else if (passVal.length < 6) {
+            passError.textContent = 'Password must be at least 6 characters';
+            triggerShake(passInput);
+            valid = false;
+        }
+
+        if (!valid) return;
+
+        const formData = new FormData(form);
+        formData.append('login', '1');
+
+        try {
+            const resp = await fetch(form.action, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+
+            const data = await resp.json();
+            if (!resp.ok) {
+                emailError.textContent = data.message || 'Login failed';
+                triggerShake(emailInput);
+                triggerShake(passInput);
+                throw new Error('Network response was not ok ' + resp.statusText);
+            }
+            window.location.href = data.redirect;
+    } catch (err) {
+        console.error('Login AJAX error', err);
+        emailError.textContent = `Server error — ${err}`;
+    }
+});
+
+function triggerShake(el) {
+    el.classList.add(shakeClass);
+    el.addEventListener('animationend', () => {
+        el.classList.remove(shakeClass);
+    }, { once: true });
+}
+});

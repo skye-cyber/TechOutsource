@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `fmarket`
+-- Database: `TechOutsource`
 --
 
 -- --------------------------------------------------------
@@ -26,6 +26,11 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `apply`
 --
+--
+/*Create Database*/
+CREATE DATABASE IF NOT EXISTS TechOutsource;
+
+USE DATABASE TechOutsource;
 
 CREATE TABLE `apply` (
   `f_username` varchar(200) NOT NULL,
@@ -50,32 +55,24 @@ INSERT INTO `apply` (`f_username`, `job_id`, `bid`, `cv`, `cover_letter`) VALUES
 --
 -- Table structure for table `employer`
 --
-
 CREATE TABLE `employer` (
   `username` varchar(200) NOT NULL,
   `password` varchar(200) NOT NULL,
-  `Name` varchar(200) NOT NULL,
+  `name` varchar(200) NOT NULL,
   `email` varchar(200) NOT NULL,
-  `contact_no` varchar(200) NOT NULL,
-  `address` varchar(200) NOT NULL,
-  `gender` varchar(200) NOT NULL,
-  `birthdate` date NOT NULL,
-  `company` varchar(200) NOT NULL,
-  `profile_sum` varchar(1000) NOT NULL
+  `contactNo` varchar(200) NOT NULL,
+  `country` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
---
--- Dumping data for table `employer`
---
+INSERT INTO `employer` (`username`, `password`, `name`, `email`, `contactNo`, `country`) VALUES
+('aaa', 'aaa', 'aaa', 'aaa', 'aaa', 'other'),
+('aaa1', 'aaa', 'aaa', 'aaa', 'aaa', 'other'),
+('dddddd', '1dddddd', 'Ddd Dd', 'd@d', '123456', 'dfd'),
+('employer1', '111111', 'Employer One', 'e@e1', '123456', 'Bangladesh'),
+('employer2', '111111', 'Employer Two', 'e@e2', '123456', 'Bangladesh'),
+('employer3', '111111', 'Employer Three', 'e@e3', '123456', 'Bangladesh'),
+('rrrupom', 'rrrupom', 'Rupom', 'rupom', 'rupom', 'other');
 
-INSERT INTO `employer` (`username`, `password`, `Name`, `email`, `contact_no`, `address`, `gender`, `birthdate`, `company`, `profile_sum`) VALUES
-('aaa', 'aaa', 'aaa', 'aaa', 'aaa', 'aaa', 'aaa', '2018-06-07', 'aaa', 'aaa'),
-('aaa1', 'aaa', 'aaa', 'aaa', 'aaa', 'aaa', 'aaa', '2018-06-07', 'aaa', 'aaa'),
-('dddddd', '1dddddd', 'Ddd Dd', 'd@d', '123456', 'dfd', 'female', '2222-11-11', 'qqq', 'qqq'),
-('employer1', '111111', 'Employer One', 'e@e1', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'Company1', 'This is a profile summery'),
-('employer2', '111111', 'Employer Two', 'e@e2', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'Company1', 'This is a profile summery'),
-('employer3', '111111', 'Employer Three', 'e@e3', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'Company1', 'This is a profile summery'),
-('rrrupom', 'rrrupom', 'Rupom', 'rupom', 'rupom', 'rupom', '', '2018-06-04', 'rupom', 'rupom');
 
 -- --------------------------------------------------------
 
@@ -93,36 +90,27 @@ CREATE TABLE `e_social` (
 --
 -- Table structure for table `freelancer`
 --
-
 CREATE TABLE `freelancer` (
   `username` varchar(200) NOT NULL,
   `password` varchar(200) NOT NULL,
-  `Name` varchar(200) NOT NULL,
+  `name` varchar(200) NOT NULL,
   `email` varchar(200) NOT NULL,
-  `contact_no` varchar(200) NOT NULL,
-  `address` varchar(200) NOT NULL,
-  `gender` varchar(200) NOT NULL,
-  `birthdate` date NOT NULL,
-  `prof_title` varchar(200) NOT NULL,
-  `profile_sum` varchar(1000) NOT NULL,
-  `education` varchar(200) NOT NULL,
-  `experience` varchar(200) NOT NULL,
-  `skills` varchar(200) NOT NULL
+  `contactNo` varchar(200) NOT NULL,
+  `country` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
 --
 -- Dumping data for table `freelancer`
 --
 
-INSERT INTO `freelancer` (`username`, `password`, `Name`, `email`, `contact_no`, `address`, `gender`, `birthdate`, `prof_title`, `profile_sum`, `education`, `experience`, `skills`) VALUES
-('ffffff', '1ffffff', 'f', 'f@f', '123456', 'f', 'other', '2222-11-11', 'gggggggggg', 'lllllllll', 'mmmmmmmmmmmm', 'nnnnnnnnnn', 'kkkkkkkkk'),
-('freelancer1', '111111', 'Freelancer One', 'f@f1', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'web developer', 'Expert in web design', 'Chittagong University of Engineering and Technology', 'Local developing site', 'web design'),
-('freelancer2', '111111', 'Freelancer Two', 'f@f2', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'web developer', 'Expert in web design', 'Chittagong University of Engineering and Technology', 'Local developing site', 'web design'),
-('freelancer3', '111111', 'Freelancer Three', 'f@f3', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'web developer', 'Expert in web design', 'Chittagong University of Engineering and Technology', 'Local developing site', 'web design'),
-('freelancer4', '111111', 'Freelancer Four', 'f@4', '123456', 'Raojan, Chittagong', 'male', '1999-11-11', 'web developer', 'Expert in web design', 'Chittagong University of Engineering and Technology', 'Local developing site', 'web design'),
-('mmmmmm', '1mmmmmm', 'm', 'm@m', '123456', 'm', 'male', '1999-11-11', '', '', '', '', ''),
-('ssssss', '1ssssss', 'sharif', 's@s', '123456', 'ss', 'male', '1999-11-11', 'web developer', 'Expert in web design', 'Cuet', 'Local developing site', 'web design'),
-('tttttt', '1tttttt', 'Ttt ttt', 't@t', '123456', 'ttt', 'male', '1999-11-11', '', '', '', '', '');
+INSERT INTO `freelancer` (`username`, `password`, `name`, `email`, `contactNo`, `country`) VALUES
+('ffffff', '1ffffff', 'f', 'f@f', '123456', 'other'),
+('freelancer1', '111111', 'Freelancer One', 'f@f1', '123456', 'Bangladesh'),
+('freelancer2', '111111', 'Freelancer Two', 'f@f2', '123456', 'Bangladesh'),
+('freelancer3', '111111', 'Freelancer Three', 'f@f3', '123456', 'Bangladesh'),
+('freelancer4', '111111', 'Freelancer Four', 'f@4', '123456', 'Bangladesh'),
+('mmmmmm', '1mmmmmm', 'm', 'm@m', '123456', 'other'),
+('ssssss', '1ssssss', 'sharif', 's@s', '123456', 'other'),
+('tttttt', '1tttttt', 'Ttt ttt', 't@t', '123456', 'other');
 
 -- --------------------------------------------------------
 

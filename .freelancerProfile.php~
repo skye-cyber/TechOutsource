@@ -1,3 +1,7 @@
+php
+
+copy
+
 <?php
 include('db/server.php');
 
@@ -33,15 +37,15 @@ try {
 
 	if ($result->num_rows > 0) {
 		$row = $result->fetch_assoc();
-		$name = $row["username"] ?? '';
-		$email = $row["email"] ?? '';
-		$contactNo = $row["contactNo"] ?? '';
-		$country = $row["country"] ?? '';
-		$prof_title = $row["prof_title"] ?? '';
-		$skills = $row["skills"] ?? '';
-		$profile_sum = $row["profile_sum"] ?? '';
-		$education = $row["education"] ?? '';
-		$experience = $row["experience"] ?? '';
+		$name = $row["username"];
+		$email = $row["email"];
+		$contactNo = $row["contactNo"];
+		$country = $row["country"];
+		$prof_title = $row["prof_title"];
+		$skills = $row["skills"];
+		$profile_sum = $row["profile_sum"];
+		$education = $row["education"];
+		$experience = $row["experience"];
 	} else {
 		$name = "";
 		$email = "";
@@ -338,3 +342,4 @@ if ($result->num_rows > 0) {
 <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>
+
