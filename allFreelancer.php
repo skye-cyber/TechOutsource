@@ -1,4 +1,9 @@
-<?php include('server.php');
+<?php
+include('db/server.php');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+// Session Check
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {
@@ -14,242 +19,157 @@ if (isset($_SESSION["Username"])) {
     }
 } else {
     $username = "";
-    //header("location: index.php");
 }
 
+// Handle View Freelancer Redirect
 if (isset($_POST["f_user"])) {
     $_SESSION["f_user"] = $_POST["f_user"];
     header("location: viewFreelancer.php");
 }
 
-$sql = "SELECT * FROM freelancer";
-$result = $conn->query($sql);
+// Handle Search
+$searchField = '';
+$searchValue = '';
 
 if (isset($_POST["s_username"])) {
-    $t = $_POST["s_username"];
-    $sql = "SELECT * FROM freelancer WHERE username='$t'";
-    $result = $conn->query($sql);
+    $searchField = 'username';
+    $searchValue = $_POST["s_username"];
+} elseif (isset($_POST["s_name"])) {
+    $searchField = 'name';
+    $searchValue = $_POST["s_name"];
+} elseif (isset($_POST["s_email"])) {
+    $searchField = 'email';
+    $searchValue = $_POST["s_email"];
 }
 
-if (isset($_POST["s_name"])) {
-    $t = $_POST["s_name"];
-    $sql = "SELECT * FROM freelancer WHERE Name='$t'";
-    $result = $conn->query($sql);
+$sql = "SELECT * FROM freelancer";
+
+if ($searchField && $searchValue) {
+    $sql .= " WHERE $searchField = '$searchValue'";
 }
 
-if (isset($_POST["s_email"])) {
-    $t = $_POST["s_email"];
-    $sql = "SELECT * FROM freelancer WHERE email='$t'";
-    $result = $conn->query($sql);
-}
-
+$result = $conn->query($sql);
 ?>
 
-
-
 <!DOCTYPE html>
-<html>
-
+<html lang="en" x-data="{ darkMode: false }" x-init="darkMode = localStorage.getItem('darkMode') === 'true'">
 <head>
-    <title>All Freelancer</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" type="text/css" href="awesome/css/fontawesome-all.min.css">
-
-    <style>
-        body {
-            padding-top: 3%;
-            margin: 0;
-        }
-
-        .card {
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            background: #fff
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All Freelancers</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/styles.css">
+    <script src='../src/js/packed_animator.js'></script>
+    <script src='../src/js/themes.js'></script>
+    <script src='../src/js/smoothScroll.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
 
 </head>
 
-<body>
+<body class="bg-purple-100 dark:bg-[#2c2c2c] text-gray-900 dark:text-white transition-colors duration-1000">
 
-    <!--Navbar menu-->
-    <nav class="navbar navbar-inverse navbar-fixed-top" id="my-navbar">
-        <div class="container">
-            <div class="navber-header">
-                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+<!-- Navbar -->
+<nav class="bg-white dark:bg-gray-950 shadow sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+        <a href="index.php" class="text-2xl font-bold text-blue-600 dark:text-blue-300 hover:scale-105 transform transition-all duration-1000">Freelance Marketplace</a>
+
+        <div class="flex items-center space-x-6">
+            <a href="allJob.php" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Browse Jobs</a>
+            <a href="allFreelancer.php" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Freelancers</a>
+            <a href="allEmployer.php" class="hover:text-blue-600 dark:hover:text-blue-400 transition">Employers</a>
+
+            <!-- Profile Dropdown -->
+            <div class="relative" x-data="{ open: false }">
+                <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4.2 0-8 2.1-8 6v2h16v-2c0-3.9-3.8-6-8-6z"/></svg>
+                    <span><?php echo htmlspecialchars($username); ?></span>
                 </button>
-                <a href="index.php" class="navbar-brand">Freelance Marketplace</a>
-            </div>
-            <div class="collapse navbar-collapse" id="navbar-collapse">
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="allJob.php">Browse all jobs</a></li>
-                    <li><a href="allFreelancer.php">Browse Freelancers</a></li>
-                    <li><a href="allEmployer.php">Browse Employers</a></li>
-                    <li class="dropdown" style="background:#000;padding:0 20px 0 20px;">
-                        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span> <?php echo $username; ?>
-                        </a>
-                        <ul class="dropdown-menu list-group list-group-item-info">
-                            <a href="<?php echo $linkPro; ?>" class="list-group-item"><span class="glyphicon glyphicon-home"></span> View profile</a>
-                            <a href="<?php echo $linkEditPro; ?>" class="list-group-item"><span class="glyphicon glyphicon-inbox"></span> Edit Profile</a>
-                            <a href="message.php" class="list-group-item"><span class="glyphicon glyphicon-envelope"></span> Messages</a>
-                            <a href="logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span> Logout</a>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-    <!--End Navbar menu-->
-
-
-    <!--main body-->
-    <div style="padding:1% 3% 1% 3%;">
-        <div class="row">
-
-            <!--Column 1-->
-            <div class="col-lg-9">
-
-                <!--Freelancer Profile Details-->
-                <div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-                    <div class="panel panel-success">
-                        <div class="panel-heading">
-                            <h3>All Freelancer</h3>
-                        </div>
-                        <div class="panel-body">
-                            <h4>
-                                <table style="width:100%">
-                                    <tr>
-                                        <td>Username</td>
-                                        <td>Name</td>
-                                        <td>Professional Title</td>
-                                        <td>Email</td>
-                                        <td>Skill</td>
-                                    </tr>
-                                    <?php
-                                    if ($result->num_rows > 0) {
-                                        // output data of each row
-                                        while ($row = $result->fetch_assoc()) {
-                                            $f_username = $row["username"];
-                                            $Name = $row["Name"];
-                                            $prof_title = $row["prof_title"];
-                                            $email = $row["email"];
-                                            $skills = $row["skills"];
-
-                                            echo '
-                                <form action="allFreelancer.php" method="post">
-                                <input type="hidden" name="f_user" value="' . $f_username . '">
-                                    <tr>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="' . $f_username . '"></td>
-                                    <td>' . $Name . '</td>
-                                    <td>' . $prof_title . '</td>
-                                    <td>' . $email . '</td>
-                                    <td>' . $skills . '</td>
-                                    </tr>
-                                </form>
-                                ';
-                                        }
-                                    } else {
-                                        echo "<tr></tr><tr><td></td><td>Nothing to show</td></tr>";
-                                    }
-
-                                    ?>
-                                </table>
-                            </h4>
-                        </div>
-                    </div>
-                    <p></p>
-
+                <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden transition-all transform scale-95 origin-top-right">
+                    <a href="<?php echo $linkPro; ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">View Profile</a>
+                    <a href="<?php echo $linkEditPro; ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Edit Profile</a>
+                    <a href="message.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Messages</a>
+                    <a href="logout.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-500">Logout</a>
                 </div>
-                <!--End Freelancer Profile Details-->
-
             </div>
-            <!--End Column 1-->
+            <!-- Theme Toggle Switch -->
+            <div class="flex items-center justify-center">
+                <label class="relative inline-block w-16 h-8 cursor-pointer select-none ml-4">
+                    <input type="checkbox" id="theme-toggle" class="peer hidden">
+                    <span
+                        class="absolute inset-0 bg-gray-300 peer-checked:bg-blue-500 transition rounded-full"
+                    ></span>
+                    <span
+                        class="absolute left-1 bottom-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-8"
+                    ></span>
+                </label>
 
-
-            <!--Column 2-->
-            <div class="col-lg-3">
-
-                <!--Main profile card-->
-                <div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-                    <p></p>
-                    <form action="allFreelancer.php" method="post">
-                        <div class="form-group">
-                            <input type="text" class="form-control" name="s_username">
-                            <center><button type="submit" class="btn btn-info">Search by username</button></center>
-                        </div>
-                    </form>
-
-                    <form action="allFreelancer.php" method="post">
-                        <div class="form-group">
-                            <input type="text" class="form-control" name="s_name">
-                            <center><button type="submit" class="btn btn-info">Search by Name</button></center>
-                        </div>
-                    </form>
-
-                    <form action="allFreelancer.php" method="post">
-                        <div class="form-group">
-                            <input type="text" class="form-control" name="s_email">
-                            <center><button type="submit" class="btn btn-info">Search by Email</button></center>
-                        </div>
-                    </form>
-
-                    <p></p>
-                </div>
-                <!--End Main profile card-->
-
-            </div>
-            <!--End Column 2-->
-
-        </div>
-    </div>
-    <!--End main body-->
-
-
-    <!--Footer-->
-    <div class="text-center" style="padding:4%;background:#222;color:#fff;margin-top:20px;">
-        <div class="row">
-            <div class="col-lg-3">
-                <h3>Quick Links</h3>
-                <p><a href="index.php">Home</a></p>
-                <p><a href="allJob.php">Browse all jobs</a></p>
-                <p><a href="allFreelancer.php">Browse Freelancers</a></p>
-                <p><a href="allEmployer.php">Browse Employers</a></p>
-            </div>
-            <div class="col-lg-3">
-                <h3>About Us</h3>
-                <p>Freelance Marketplace</p>
-
-                <p>Nairobi, Kenya</p>
-                <p>&copy 2023</p>
-            </div>
-            <div class="col-lg-3">
-                <h3>Contact Us</h3>
-                <p>+254 725 146 071</p>
-                <p>Nairobi, Kenya</p>
-                <p>&copy 2023</p>
-            </div>
-            <div class="col-lg-3">
-                <h3>Social Contact</h3>
-                <p style="font-size:20px;color:#3B579D;"><i class="fab fa-facebook-square"> Facebook</i></p>
-                <p style="font-size:20px;color:#D34438;"><i class="fab fa-google-plus-square"> Google</i></p>
-                <p style="font-size:20px;color:#2CAAE1;"><i class="fab fa-twitter-square"> Twitter</i></p>
-                <p style="font-size:20px;color:#0274B3;"><i class="fab fa-linkedin"> Linkedin</i></p>
+                <span class="text-teal-950 font-bold dark:text-gray-200 ml-2"></span>
             </div>
         </div>
     </div>
-    <!--End Footer-->
+</nav>
 
+<!-- Main Content -->
+<main class="container mx-auto px-4 py-8 space-y-10">
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-8 transition-colors duration-1000">
 
-    <script type="text/javascript" src="jquery/jquery-3.2.1.min.js"></script>
-    <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <!-- Freelancer List -->
+        <div class="md:col-span-2 bg-sky-200 dark:bg-slate-950 p-6 rounded-lg shadow-lg transition-colors duration-1000" data-aos="fade-right">
+            <h2 class="text-3xl font-bold mb-6 text-blue-600 dark:text-blue-400 transition-colors duration-1000">Available Freelancers</h2>
+            <div class="overflow-x-auto">
+                <table class="min-w-full text-sm">
+                    <thead>
+                        <tr class="bg-blue-100 text-black">
+                            <th class="py-3 px-6 text-left">Username</th>
+                            <th class="py-3 px-6 text-left">Name</th>
+                            <th class="py-3 px-6 text-left">Professional Title</th>
+                            <th class="py-3 px-6 text-left">Email</th>
+                            <th class="py-3 px-6 text-left">Skills</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php if ($result->num_rows > 0): ?>
+                            <?php while ($row = $result->fetch_assoc()): ?>
+                                <tr class="border-b hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-1000">
+                                    <td class="py-3"><a href="viewFreelancer.php?f_user=<?= htmlspecialchars($row['username']) ?>" class="text-teal-700 font-bold dark:text-teal-400 hover:underline transition-colors duration-300"><?= htmlspecialchars($row['username']) ?></a></td>
+                                    <td class="py-3 px-6 text-slate-700 dark:text-orange-400 transition-colors duration-300"><?= $row['name'] ? htmlspecialchars($row['name']) : 'NULL' ?></td>
+                                    <td class="py-3 px-6 dark:text-cyan-500 transition-colors duration-300"><?= $row['prof_title'] ? htmlspecialchars($row['prof_title']) : 'NULL' ?></td>
+                                    <td class="py-3 px-6 text-sky-600 dark:text-[#5555ff] transition-colors duration-300"><?= htmlspecialchars($row['email']) ?></td>
+                                    <td class="py-3 px-6 text-zinc-700 dark:text-pink-400 transition-colors duration-300"><?= $row['skills'] ? htmlspecialchars($row['skills']) : 'NULL' ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <tr>
+                                <td colspan="5" class="text-center py-6 text-gray-500 dark:text-gray-400">No freelancers found.</td>
+                            </tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
+        <!-- Search Sidebar -->
+        <div class="bg-blue-200 dark:bg-slate-900 p-6 rounded-lg shadow-lg" data-aos="fade-left">
+            <h2 class="text-2xl font-bold mb-4 text-blue-600 dark:text-blue-400">Search Freelancers</h2>
+            <?php foreach (['username' => 'Username', 'name' => 'Name', 'email' => 'Email'] as $field => $label): ?>
+            <form action="allFreelancer.php" method="post" class="mb-4 space-y-6">
+                <div class="mb-2">
+                    <input type="text" name="s_<?= $field ?>" class="w-full text-black dark:text-white p-3 rounded-lg border focus:ring-2 focus:ring-blue-500 dark:bg-blue-50 dark:border-gray-600" placeholder="Search by <?= $label ?>">
+                </div>
+                <button type="submit" class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"><?= "Search by $label" ?></button>
+            </form>
+            <?php endforeach; ?>
+        </div>
+
+    </section>
+</main>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-gray-400 py-8">
+    <div class="container mx-auto text-center text-sm">
+        &copy; 2025 Freelance Marketplace. Made with ❤️ using TailwindCSS & Alpine.js.
+    </div>
+</footer>
 
 </body>
-
 </html>

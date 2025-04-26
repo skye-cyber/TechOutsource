@@ -1,311 +1,133 @@
-<?php include('server.php');
-if(isset($_SESSION["Username"])){
-	$username=$_SESSION["Username"];
-	if ($_SESSION["Usertype"]==1) {
-		$linkPro="freelancerProfile.php";
-		$linkEditPro="editFreelancer.php";
-		$linkBtn="applyJob.php";
-		$textBtn="Apply for this job";
-	}
-	else{
-		$linkPro="employerProfile.php";
-		$linkEditPro="editEmployer.php";
-		$linkBtn="editJob.php";
-		$textBtn="Edit the job offer";
-	}
-}
-else{
-    $username="";
-	//header("location: index.php");
+<?php
+include('db/server.php');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-if(isset($_POST["jid"])){
-	$_SESSION["job_id"]=$_POST["jid"];
-	header("location: jobDetails.php");
+// Determine user links
+$username = $_SESSION['Username'] ?? '';
+$usertype = $_SESSION['Usertype'] ?? 0;
+if ($username) {
+    if ($usertype == 1) {
+        $linkPro = 'freelancerProfile.php';
+        $linkEditPro = 'editFreelancer.php';
+        $textBtn = 'Apply for this job';
+    } else {
+        $linkPro = 'employerProfile.php';
+        $linkEditPro = 'editEmployer.php';
+        $textBtn = 'Edit Job Offer';
+    }
 }
 
-$sql = "SELECT * FROM job_offer WHERE valid=1 ORDER BY timestamp DESC";
+// Handle job details redirect
+if (isset($_POST['jid'])) {
+    $_SESSION['job_id'] = $_POST['jid'];
+    header('Location: jobDetails.php');
+    exit;
+}
+
+// Search filters
+$filters = ['s_title' => 'title', 's_type' => 'type', 's_employer' => 'e_username', 's_id' => 'job_id'];
+$where = [];
+foreach ($filters as $input => $col) {
+    if (!empty($_POST[$input])) {
+        $val = $conn->real_escape_string($_POST[$input]);
+        $where[] = "$col = '$val'";
+    }
+}
+$sql = 'SELECT * FROM job_offer WHERE valid=1' . (!empty($where) ? ' AND ' . implode(' AND ', $where) : '') . ' ORDER BY timestamp DESC';
 $result = $conn->query($sql);
-
-if(isset($_POST["s_title"])){
-	$t=$_POST["s_title"];
-	$sql = "SELECT * FROM job_offer WHERE title='$t' and valid=1";
-	$result = $conn->query($sql);
-}
-
-if(isset($_POST["s_type"])){
-	$t=$_POST["s_type"];
-	$sql = "SELECT * FROM job_offer WHERE type='$t' and valid=1";
-	$result = $conn->query($sql);
-}
-
-if(isset($_POST["s_employer"])){
-	$t=$_POST["s_employer"];
-	$sql = "SELECT * FROM job_offer WHERE e_username='$t' and valid=1";
-	$result = $conn->query($sql);
-}
-
-if(isset($_POST["s_id"])){
-	$t=$_POST["s_id"];
-	$sql = "SELECT * FROM job_offer WHERE job_id='$t' and valid=1";
-	$result = $conn->query($sql);
-}
-
-if(isset($_POST["recentJob"])){
-	$sql = "SELECT * FROM job_offer WHERE valid=1 ORDER BY timestamp DESC";
-	$result = $conn->query($sql);
-}
-
-if(isset($_POST["oldJob"])){
-	$sql = "SELECT * FROM job_offer WHERE valid=1";
-	$result = $conn->query($sql);
-}
-
- ?>
-
-
-
-<!DOCTYPE html>
-<html>
-
-    <head>
-        <title>All Job Offers</title>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
-        <link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-theme.min.css">
-        <link rel="stylesheet" type="text/css" href="awesome/css/fontawesome-all.min.css">
-
-        <style>
-        body {
-            padding-top: 3%;
-            margin: 0;
-        }
-
-        .card {
-            box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-            background: #fff
-        }
-        </style>
-
-    </head>
-
-    <body>
-
-        <!--Navbar menu-->
-        <nav class="navbar navbar-inverse navbar-fixed-top" id="my-navbar">
-            <div class="container">
-                <div class="navber-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                    <a href="index.php" class="navbar-brand">Freelance Marketplace</a>
-                </div>
-                <div class="collapse navbar-collapse" id="navbar-collapse">
-                    <ul class="nav navbar-nav navbar-right">
-                        <li><a href="allJob.php">Browse all jobs</a></li>
-                        <li><a href="allFreelancer.php">Browse Freelancers</a></li>
-                        <li><a href="allEmployer.php">Browse Employers</a></li>
-                        <li class="dropdown" style="background:#000;padding:0 20px 0 20px;">
-                            <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span
-                                    class="glyphicon glyphicon-user"></span> <?php echo $username; ?>
-                            </a>
-                            <ul class="dropdown-menu list-group list-group-item-info">
-                                <a href="<?php echo $linkPro; ?>" class="list-group-item"><span
-                                        class="glyphicon glyphicon-home"></span> View profile</a>
-                                <a href="<?php echo $linkEditPro; ?>" class="list-group-item"><span
-                                        class="glyphicon glyphicon-inbox"></span> Edit Profile</a>
-                                <a href="message.php" class="list-group-item"><span
-                                        class="glyphicon glyphicon-envelope"></span> Messages</a>
-                                <a href="logout.php" class="list-group-item"><span
-                                        class="glyphicon glyphicon-ok"></span> Logout</a>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-        <!--End Navbar menu-->
-
-
-        <!--main body-->
-        <div style="padding:1% 3% 1% 3%;">
-            <div class="row">
-
-                <!--Column 1-->
-                <div class="col-lg-9">
-
-                    <!--Freelancer Profile Details-->
-                    <div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-                        <div class="panel panel-success">
-                            <div class="panel-heading">
-                                <h3>All Job Offers</h3>
-                            </div>
-                            <div class="panel-body">
-                                <h4>
-                                    <table style="width:100%">
-                                        <tr>
-                                            <td>Job Id</td>
-                                            <td>Title</td>
-                                            <td>Type</td>
-                                            <td>Budget</td>
-                                            <td>Employer</td>
-                                            <td>Posted on</td>
-                                        </tr>
-                                        <?php 
-                      if ($result->num_rows > 0) {
-                            // output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                $job_id=$row["job_id"];
-                                $title=$row["title"];
-                                $type=$row["type"];
-                                $budget=$row["budget"];
-                                $e_username=$row["e_username"];
-                                $timestamp=$row["timestamp"];
-
-                                echo '
-                                <form action="allJob.php" method="post">
-                                <input type="hidden" name="jid" value="'.$job_id.'">
-                                    <tr>
-                                    <td>'.$job_id.'</td>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$title.'"></td>
-                                    <td>'.$type.'</td>
-                                    <td>'.$budget.'</td>
-                                    <td>'.$e_username.'</td>
-                                    <td>'.$timestamp.'</td>
-                                    </tr>
-                                </form>
-                                ';
-
-                                }
-                        } else {
-                            echo "<tr></tr><tr><td></td><td>Nothing to show</td></tr>";
-                        }
-
-                       ?>
-                                    </table>
-                                </h4>
-                            </div>
-                        </div>
-                        <p></p>
-                    </div>
-                    <!--End Freelancer Profile Details-->
-
-                </div>
-                <!--End Column 1-->
-
-
-                <!--Column 2-->
-                <div class="col-lg-3">
-
-                    <!--Main profile card-->
-                    <div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-                        <p></p>
-                        <form action="allJob.php" method="post">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="s_title">
-                                <center><button type="submit" class="btn btn-info">Search by Job Title</button></center>
-                            </div>
-                        </form>
-
-                        <form action="allJob.php" method="post">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="s_type">
-                                <center><button type="submit" class="btn btn-info">Search by Job Type</button></center>
-                            </div>
-                        </form>
-
-                        <form action="allJob.php" method="post">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="s_employer">
-                                <center><button type="submit" class="btn btn-info">Search by Employer</button></center>
-                            </div>
-                        </form>
-
-                        <form action="allJob.php" method="post">
-                            <div class="form-group">
-                                <input type="text" class="form-control" name="s_id">
-                                <center><button type="submit" class="btn btn-info">Search by Job ID</button></center>
-                            </div>
-                        </form>
-
-                        <form action="allJob.php" method="post">
-                            <div class="form-group">
-                                <center><button type="submit" name="recentJob" class="btn btn-warning">See all recent
-                                        posted jobs first</button></center>
-                            </div>
-                        </form>
-
-                        <form action="allJob.php" method="post">
-                            <div class="form-group">
-                                <center><button type="submit" name="oldJob" class="btn btn-warning">See all older posted
-                                        jobs first</button></center>
-                            </div>
-                        </form>
-
-                        <p></p>
-                    </div>
-                    <!--End Main profile card-->
-
-                </div>
-                <!--End Column 2-->
-
-            </div>
-        </div>
-        <!--End main body-->
-
-
-        <!--Footer-->
-        <div class="text-center" style="padding:4%;background:#222;color:#fff;margin-top:20px;">
-            <div class="row">
-                <div class="col-lg-3">
-                    <h3>Quick Links</h3>
-                    <p><a href="index.php">Home</a></p>
-                    <p><a href="allJob.php">Browse all jobs</a></p>
-                    <p><a href="allFreelancer.php">Browse Freelancers</a></p>
-                    <p><a href="allEmployer.php">Browse Employers</a></p>
-                </div>
-                <div class="col-lg-3">
-                    <h3>About Us</h3>
-                    <p>Freelance Marketplace</p>
-			
-			<p>Nairobi, Kenya</p>
-			<p>&copy 2023</p>
-        </div>
-        <div class="col-lg-3">
-            <h3>Contact Us</h3>
-            <p>+254 725 146 071</p>
-            <p>Nairobi, Kenya</p>
-            <p>&copy 2023</p>
-                </div>
-                <div class="col-lg-3">
-                    <h3>Social Contact</h3>
-                    <p style="font-size:20px;color:#3B579D;"><i class="fab fa-facebook-square"> Facebook</i></p>
-                    <p style="font-size:20px;color:#D34438;"><i class="fab fa-google-plus-square"> Google</i></p>
-                    <p style="font-size:20px;color:#2CAAE1;"><i class="fab fa-twitter-square"> Twitter</i></p>
-                    <p style="font-size:20px;color:#0274B3;"><i class="fab fa-linkedin"> Linkedin</i></p>
-                </div>
-            </div>
-        </div>
-        <!--End Footer-->
-
-
-        <script type="text/javascript" src="jquery/jquery-3.2.1.min.js"></script>
-        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
-
-        <?php 
-
-if($e_username!=$username && $_SESSION["Usertype"]!=1){
-	echo "<script>
-		        $('#applybtn').hide();
-		</script>";
-} 
 ?>
 
+<!DOCTYPE html>
+<html lang="en" x-data="{ dark: localStorage.dark == 'true' }" :class="{ 'dark': dark }">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All Job Offers</title>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="src/css/styles.css">
+  <script src='../src/js/packed_animator.js'></script>
+  <script src='../src/js/themes.js'></script>
+  <script src='../src/js/smoothScroll.js'></script>
+  <style>
+    @layer utilities {
+      .bg-dark { background-color: #1a202c; }
+      .text-dark { color: #e2e8f0; }
+    }
+    [x-cloak] { display: none; }
+  </style>
+</head>
+<body class="bg-[#3a3b7f] backdrop-blur-sm dark:bg-dark text-gray-900 dark:text-dark transition-colors duration-700">
 
-    </body>
+<nav class="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 transition-colors duration-700">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="index.php" class="text-2xl font-bold text-blue-600 dark:text-blue-400 hover:scale-105 dark:text-white transition-colors duration-700">Marketplace</a>
+    <div class="flex items-center space-x-6">
+      <a href="allJob.php" class="hover:text-blue-600 dark:hover:text-blue-400 transition dark:text-white transition-colors duration-700">Jobs</a>
+      <a href="allFreelancer.php" class="hover:text-blue-600 dark:hover:text-blue-400 transition dark:text-white transition-colors duration-700">Freelancers</a>
+      <a href="allEmployer.php" class="hover:text-blue-600 dark:hover:text-blue-400 transition dark:text-white transition-colors duration-700">Employers</a>
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="flex items-center space-x-2">
+          <svg class="w-6 h-6 fill-slate-900 dark:fill-white hover:fill-blue-300 transition-colors duration-700" viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4.2 0-8 2.1-8 6v2h16v-2c0-3.9-3.8-6-8-6z"/></svg>
+          <span><?php echo htmlspecialchars($username); ?></span>
+        </button>
+        <div x-show="open" @click.away="open = false" x-cloak x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg">
+          <a href="<?php echo $linkPro; ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white">Profile</a>
+          <a href="<?php echo $linkEditPro; ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white">Edit Profile</a>
+          <a href="message.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white">Messages</a>
+          <a href="logout.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-500 dark:text-white">Logout</a>
+        </div>
+      </div>
+      <button id="theme-toggle" @click="dark = !dark; localStorage.dark = dark" class="bg-gray-300 dark:bg-gray-600 p-2 rounded-lg dark:bg-sky-400">
+        <span x-show="!dark">🌙</span><span x-show="dark">☀️</span>
+      </button>
+    </div>
+  </div>
+</nav>
 
+<main class="max-w-7xl mx-auto px-4 py-8">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <div class="lg:col-span-3 space-y-6">
+      <h1 class="text-3xl font-bold text-cyan-200 dark:text-cyan-100 transition-colors duration-700">Job Offers</h1>
+      <div class="grid gap-6 md:grid-cols-2 transition-colors duration-700">
+        <?php if($result->num_rows): while($job = $result->fetch_assoc()): ?>
+          <form method="post" action="allJob.php" data-aos="fade-up" class="bg-white dark:bg-slate-900 p-6 rounded-xl shadow hover:shadow-lg transition-colors duration-1000">
+            <input type="hidden" name="jid" value="<?= $job['job_id'] ?>">
+            <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200 transition-colors duration-700"><?= htmlspecialchars($job['title']) ?></h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-700">Type: <span class="font-medium"><?= htmlspecialchars($job['type']) ?></span></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-700">Budget: <span class="font-medium"><?= htmlspecialchars($job['budget']) ?></span></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-700">Posted by: <?= htmlspecialchars($job['e_username']) ?></p>
+            <p class="text-xs text-gray-500 mt-4"><?= date('M j, Y', strtotime($job['timestamp'])) ?></p>
+            <button type="submit" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors duration-700"><?= $textBtn ?></button>
+          </form>
+        <?php endwhile; else: ?>
+          <p class="col-span-3 text-center text-gray-500 dark:text-gray-400">No jobs found.</p>
+        <?php endif; ?>
+      </div>
+    </div>
+
+    <aside class="space-y-6">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors duration-700" data-aos="fade-left">
+        <h2 class="text-2xl font-semibold mb-4 text-blue-600 dark:text-blue-400 transition-colors duration-700">Search</h2>
+        <?php foreach(['s_title'=>'Title','s_type'=>'Type','s_employer'=>'Employer','s_id'=>'Job ID'] as $input=>$label): ?>
+          <form method="post" action="allJob.php" class="space-y-2 mb-4">
+            <label class="block text-gray-700 dark:text-gray-300 transition-colors duration-700"><?= $label ?></label>
+            <input name="<?= $input ?>" class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 transition-colors duration-700" placeholder="Search by <?= $label ?>">
+            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors duration-700">Go</button>
+          </form>
+        <?php endforeach; ?>
+        <form method="post" action="allJob.php" class="space-y-2">
+          <button name="recentJob" class="w-full bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-colors duration-700">Newest First</button>
+          <button name="oldJob" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg transition-colors duration-700">Oldest First</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</main>
+
+<footer class="bg-gray-100 dark:bg-gray-900 text-center py-6 mt-12 border-t dark:border-gray-700">
+  <p class="text-sm text-gray-600 dark:text-gray-400">&copy; <?= date('Y') ?> Freelance Marketplace</p>
+</footer>
+</body>
 </html>

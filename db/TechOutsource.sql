@@ -90,27 +90,32 @@ CREATE TABLE `e_social` (
 --
 -- Table structure for table `freelancer`
 --
+
 CREATE TABLE `freelancer` (
-  `username` varchar(200) NOT NULL,
-  `password` varchar(200) NOT NULL,
-  `name` varchar(200) NOT NULL,
-  `email` varchar(200) NOT NULL,
-  `contactNo` varchar(200) NOT NULL,
-  `country` varchar(200) NOT NULL
+    `username` varchar(200) NOT NULL,
+    `password` varchar(200) NOT NULL,
+    `name` varchar(200) NOT NULL,
+    `email` varchar(200) NOT NULL,
+    `contactNo` varchar(200) NOT NULL,
+    `country` varchar(200) NOT NULL,
+    `experience` varchar(200) NULL,
+    `education` varchar(200) NULL,
+    `profile_sum` varchar(200) NULL,
+    `skills` varchar(200) NULL,
+    `prof_title` varchar(200) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 --
--- Dumping data for table `freelancer`
---
 
-INSERT INTO `freelancer` (`username`, `password`, `name`, `email`, `contactNo`, `country`) VALUES
-('ffffff', '1ffffff', 'f', 'f@f', '123456', 'other'),
-('freelancer1', '111111', 'Freelancer One', 'f@f1', '123456', 'Bangladesh'),
-('freelancer2', '111111', 'Freelancer Two', 'f@f2', '123456', 'Bangladesh'),
-('freelancer3', '111111', 'Freelancer Three', 'f@f3', '123456', 'Bangladesh'),
-('freelancer4', '111111', 'Freelancer Four', 'f@4', '123456', 'Bangladesh'),
-('mmmmmm', '1mmmmmm', 'm', 'm@m', '123456', 'other'),
-('ssssss', '1ssssss', 'sharif', 's@s', '123456', 'other'),
-('tttttt', '1tttttt', 'Ttt ttt', 't@t', '123456', 'other');
+INSERT INTO `freelancer` (`username`, `password`, `name`, `email`, `contactNo`, `country`, `experience`, `education`, `profile_sum`, `skills`, `prof_title`)
+VALUES
+('ffffff', '1ffffff', 'f', 'f@f', '123456', 'other', NULL, NULL, NULL, NULL, NULL),
+('freelancer1', '111111', 'Freelancer One', 'f@f1', '123456', 'Bangladesh', NULL, NULL, NULL, NULL, NULL),
+('freelancer2', '111111', 'Freelancer Two', 'f@f2', '123456', 'Bangladesh', NULL, NULL, NULL, NULL, NULL),
+('freelancer3', '111111', 'Freelancer Three', 'f@f3', '123456', 'Bangladesh', NULL, NULL, NULL, NULL, NULL),
+('freelancer4', '111111', 'Freelancer Four', 'f@4', '123456', 'Bangladesh', NULL, NULL, NULL, NULL, NULL),
+('mmmmmm', '1mmmmmm', 'm', 'm@m', '123456', 'other', NULL, NULL, NULL, NULL, NULL),
+('ssssss', '1ssssss', 'sharif', 's@s', '123456', 'other', NULL, NULL, NULL, NULL, NULL),
+('tttttt', '1tttttt', 'Ttt ttt', 't@t', '123456', 'other', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 

@@ -1,281 +1,143 @@
-<?php include('server.php');
-if(isset($_SESSION["Username"])){
-	$username=$_SESSION["Username"];
-	if ($_SESSION["Usertype"]==1) {
-		$linkPro="freelancerProfile.php";
-		$linkEditPro="editFreelancer.php";
-		$linkBtn="applyJob.php";
-		$textBtn="Apply for this job";
-	}
-	else{
-		$linkPro="employerProfile.php";
-		$linkEditPro="editEmployer.php";
-		$linkBtn="editJob.php";
-		$textBtn="Edit the job offer";
-	}
+<?php
+include('db/server.php');
+if (session_status() === PHP_SESSION_NONE) {
+	session_start();
 }
-else{
-    $username="";
-	//header("location: index.php");
+// Determine current user and links
+$username = $_SESSION['Username'] ?? '';
+$usertype = $_SESSION['Usertype'] ?? 0;
+if ($username) {
+    if ($usertype == 1) {
+        $linkPro = 'freelancerProfile.php';
+        $linkEditPro = 'editFreelancer.php';
+        $actionBtnText = 'Apply for this job';
+    } else {
+        $linkPro = 'employerProfile.php';
+        $linkEditPro = 'editEmployer.php';
+        $actionBtnText = 'Edit Job Offer';
+    }
 }
 
-$sql = "SELECT * FROM message WHERE receiver='$username' ORDER BY timestamp DESC";
+// Fetch messages based on filters
+$mode = 'inbox';
+$where = "receiver='$username'";
+if (isset($_POST['s_inbox'])) {
+    $sender = $conn->real_escape_string($_POST['s_inbox']);
+    $where = "receiver='$username' AND sender='$sender'";
+}
+if (isset($_POST['s_sm'])) {
+    $rcv = $conn->real_escape_string($_POST['s_sm']);
+    $where = "sender='$username' AND receiver='$rcv'";
+    $mode = 'sent';
+}
+if (isset($_POST['sm'])) {
+    $where = "sender='$username'";
+    $mode = 'sent';
+}
+if (isset($_POST['inbox'])) {
+    $where = "receiver='$username'";
+    $mode = 'inbox';
+}
+
+$sql = "SELECT * FROM message WHERE $where ORDER BY timestamp DESC";
 $result = $conn->query($sql);
-$f=0;
-
-if(isset($_POST["sr"])){
-	$t=$_POST["sr"];
-	$sql = "SELECT * FROM freelancer WHERE username='$t'";
-	$result = $conn->query($sql);
-	if ($result->num_rows > 0) {
-		$_SESSION["f_user"]=$t;
-		header("location: viewFreelancer.php");
-	} else {
-	    $sql = "SELECT * FROM employer WHERE username='$t'";
-		$result = $conn->query($sql);
-		if ($result->num_rows > 0) {
-			$_SESSION["e_user"]=$t;
-			header("location: viewEmployer.php");
-		}
-	}
-}
-
-if(isset($_POST["s_inbox"])){
-	$t=$_POST["s_inbox"];
-	$sql = "SELECT * FROM message WHERE receiver='$username' and sender='$t' ORDER BY timestamp DESC";
-	$result = $conn->query($sql);
-	$f=0;
-}
-
-if(isset($_POST["s_sm"])){
-	$t=$_POST["s_sm"];
-	$sql = "SELECT * FROM message WHERE sender='$username' and receiver='$t' ORDER BY timestamp DESC";
-	$result = $conn->query($sql);
-	$f=1;
-}
-
-if(isset($_POST["inbox"])){
-	$sql = "SELECT * FROM message WHERE receiver='$username' ORDER BY timestamp DESC";
-	$result = $conn->query($sql);
-	$f=0;
-}
-
-if(isset($_POST["sm"])){
-	$sql = "SELECT * FROM message WHERE sender='$username' ORDER BY timestamp DESC";
-	$result = $conn->query($sql);
-	$f=1;
-}
-
-if(isset($_POST["rep"])){
-	$_SESSION["msgRcv"]=$_POST["rep"];
-	header("location: sendMessage.php");
-}
-
-
-
-
- ?>
-
-
+?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en" x-data="{ dark: localStorage.dark == 'true' }" :class="{ 'dark': dark }">
 <head>
-	<title>Message</title>
-	<meta charset="utf-8">
-  	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-theme.min.css">
-	<link rel="stylesheet" type="text/css" href="awesome/css/fontawesome-all.min.css">
-
-<style>
-	body{padding-top: 3%;margin: 0;}
-	.card{box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); background:#fff}
-</style>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Messages</title>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+  <link rel="stylesheet" href="src/css/styles.css">
+  <script src='../src/js/packed_animator.js'></script>
+  <script src='../src/js/themes.js'></script>
+  <script src='../src/js/smoothScroll.js'></script>
+  <style>
+    @layer utilities {
+      .bg-dark { background-color: #1a202c; }
+      .text-dark { color: #e2e8f0; }
+    }
+    [x-cloak] { display: none; }
+  </style>
 </head>
-<body>
+<body class="bg-gray-100 dark:bg-slate-950 text-gray-900 dark:text-dark transition-colors duration-700">
 
-<!--Navbar menu-->
-<nav class="navbar navbar-inverse navbar-fixed-top" id="my-navbar">
-	<div class="container">
-		<div class="navber-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a href="index.php" class="navbar-brand">Freelance Marketplace</a>
-		</div>
-		<div class="collapse navbar-collapse" id="navbar-collapse">
-			<ul class="nav navbar-nav navbar-right">
-				<li><a href="allJob.php">Browse all jobs</a></li>
-				<li><a href="allFreelancer.php">Browse Freelancers</a></li>
-				<li><a href="allEmployer.php">Browse Employers</a></li>
-				<li class="dropdown" style="background:#000;padding:0 20px 0 20px;">
-			        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span> <?php echo $username; ?>
-			        </a>
-			        <ul class="dropdown-menu list-group list-group-item-info">
-			        	<a href="<?php echo $linkPro; ?>" class="list-group-item"><span class="glyphicon glyphicon-home"></span>  View profile</a>
-			          	<a href="<?php echo $linkEditPro; ?>" class="list-group-item"><span class="glyphicon glyphicon-inbox"></span>  Edit Profile</a>
-					  	<a href="message.php" class="list-group-item"><span class="glyphicon glyphicon-envelope"></span>  Messages</a> 
-					  	<a href="logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span>  Logout</a>
-			        </ul>
-			    </li>
-			</ul>
-		</div>		
-	</div>	
-</nav>
-<!--End Navbar menu-->
-
-
-<!--main body-->
-<div style="padding:1% 3% 1% 3%;">
-<div class="row">
-
-<!--Column 1-->
-	<div class="col-lg-9">
-
-<!--Freelancer Profile Details-->	
-		<div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-			<div class="panel panel-success">
-			  <div class="panel-heading"><h3>All Messages</h3></div>
-			  <div class="panel-body"><h4>
-                  <table style="width:100%">
-                      <tr>
-                          <td>Message</td>
-                          <td>Username</td>
-                      </tr>
-                      <?php
-                      	if ($result->num_rows > 0) {
-						    // output data of each row
-						    while($row = $result->fetch_assoc()) {
-						        $sender=$row["sender"];
-						        $receiver=$row["receiver"];
-						        $msg=$row["msg"];
-						        $timestamp=$row["timestamp"];
-
-						        if ($f==0) {
-						        	$sr=$sender;
-						        }else{
-						        	$sr=$receiver;
-						        }
-
-
-                                echo '
-                                <form action="message.php" method="post">
-                                <input type="hidden" name="sr" value="'.$sr.'">
-                                    <tr>
-                                    <td>'.$msg.'</td>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$sr.'"></td>
-                                    </form>
-                                    <form action="message.php" method="post">
-                                    <input type="hidden" name="rep" value="'.$sr.'">
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="Reply"></td>
-                                    <td>'.$timestamp.'</td>
-                                    </tr>
-                                </form>
-                                ';
-
-                                }
-                        } else {
-                            echo "<tr></tr><tr><td></td><td>Nothing to show</td></tr>";
-                        }
-
-                       ?>
-                     </table>
-              </h4></div>
-			</div>
-			<p></p>
-		</div>
-<!--End Freelancer Profile Details-->
-
-	</div>
-<!--End Column 1-->
-
-
-<!--Column 2-->
-	<div class="col-lg-3">
-
-<!--Main profile card-->
-		<div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-			<p></p>
-			<form action="message.php" method="post">
-				<div class="form-group">
-				  <input type="text" class="form-control" name="s_inbox">
-				  <center><button type="submit" class="btn btn-info">Search Inbox</button></center>
-				</div>
-	        </form>
-
-	        <form action="message.php" method="post">
-				<div class="form-group">
-				  <input type="text" class="form-control" name="s_sm">
-				  <center><button type="submit" class="btn btn-info">Search Sent Messages</button></center>
-				</div>
-	        </form>
-
-	        <form action="message.php" method="post">
-				<div class="form-group">
-				  <center><button type="submit" name="inbox" class="btn btn-warning">Inbox Messages</button></center>
-				</div>
-	        </form>
-
-	        <form action="message.php" method="post">
-				<div class="form-group">
-				  <center><button type="submit" name="sm" class="btn btn-warning">Sent Messages</button></center>
-				</div>
-	        </form>
-
-	        <p></p>
-	    </div>
-<!--End Main profile card-->
-
-	</div>
-<!--End Column 2-->
-
-</div>
-</div>
-<!--End main body-->
-
-
-<!--Footer-->
-<div class="text-center" style="padding:4%;background:#222;color:#fff;margin-top:20px;">
-	<div class="row">
-			<div class="col-lg-3">
-			<h3>Quick Links</h3>
-			<p><a href="index.php">Home</a></p>
-			<p><a href="allJob.php">Browse all jobs</a></p>
-			<p><a href="allFreelancer.php">Browse Freelancers</a></p>
-			<p><a href="allEmployer.php">Browse Employers</a></p>
-		</div>
-		<div class="col-lg-3">
-		<p>Freelance Marketplace</p>
-			
-			<p>Nairobi, Kenya</p>
-			<p>&copy 2023</p>
+<nav class="bg-white dark:bg-zinc-800 shadow sticky top-0 z-50">
+  <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+    <a href="index.php" class="text-2xl font-bold text-blue-600 dark:text-blue-400">Marketplace</a>
+    <div class="flex items-center space-x-6">
+      <a href="allJob.php" class="hover:text-blue-600 dark:hover:text-blue-400 dark:text-white transition-colors duration-700">Jobs</a>
+      <a href="allFreelancer.php" class="hover:text-blue-600 dark:hover:text-blue-400 dark:text-white transition-colors duration-700">Freelancers</a>
+      <a href="allEmployer.php" class="hover:text-blue-600 dark:hover:text-blue-400 dark:text-white transition-colors duration-700">Employers</a>
+      <div class="relative" x-data="{ open: false }">
+        <button @click="open = !open" class="flex items-center space-x-2">
+          <svg class="w-6 h-6 fill-slate-900 dark:fill-white hover:fill-blue-300 transition-colors duration-700" viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4.2 0-8 2.1-8 6v2h16v-2c0-3.9-3.8-6-8-6z"/></svg>
+          <span><?= htmlspecialchars($username) ?></span>
+        </button>
+        <div x-show="open" @click.away="open = false" x-cloak x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg">
+          <a href="<?= $linkPro ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Profile</a>
+          <a href="<?= $linkEditPro ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Edit Profile</a>
+          <a href="message.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Messages</a>
+          <a href="logout.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-500">Logout</a>
         </div>
-        <div class="col-lg-3">
-            <h3>Contact Us</h3>
-            <p>+254 725 146 071</p>
-            <p>Nairobi, Kenya</p>
-            <p>&copy 2023</p>
-		</div>
-		<div class="col-lg-3">
-			<h3>Social Contact</h3>
-			<p style="font-size:20px;color:#3B579D;"><i class="fab fa-facebook-square"> Facebook</i></p>
-			<p style="font-size:20px;color:#D34438;"><i class="fab fa-google-plus-square"> Google</i></p>
-			<p style="font-size:20px;color:#2CAAE1;"><i class="fab fa-twitter-square"> Twitter</i></p>
-			<p style="font-size:20px;color:#0274B3;"><i class="fab fa-linkedin"> Linkedin</i></p>
-		</div>
-	</div>
-</div>
-<!--End Footer-->
+      </div>
+      <button id="theme-toggle" @click="dark = !dark; localStorage.dark = dark" class="bg-gray-300 dark:bg-gray-600 p-2 rounded-lg">
+        <span x-show="!dark">🌙</span><span x-show="dark">☀️</span>
+      </button>
+    </div>
+  </div>
+</nav>
 
+<main class="max-w-7xl mx-auto px-4 py-8 dark:bg-slate-900 rounded-lg mt-2 transition-colors duration-700">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+    <section class="lg:col-span-3 space-y-6">
+      <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-400 transition-colors duration-700">Messages (<?= ucfirst($mode) ?>)</h1>
+      <div class="space-y-4">
+        <?php if($result->num_rows): while($msg = $result->fetch_assoc()):
+            $other = ($mode=='inbox' ? $msg['sender'] : $msg['receiver']); ?>
+          <div data-aos="fade-up" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-colors duration-700">
+            <p class="text-gray-800 dark:text-gray-200 mb-2 transition-colors duration-700">"<?= htmlspecialchars($msg['msg']) ?>"</p>
+            <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
+              <span><?= $mode=='inbox' ? 'From' : 'To' ?>: <?= htmlspecialchars($other) ?></span>
+              <span><?= date('M j, Y H:i', strtotime($msg['timestamp'])) ?></span>
+            </div>
+            <form method="post" action="message.php" class="mt-2">
+              <input type="hidden" name="rep" value="<?= htmlspecialchars($other) ?>">
+              <button type="submit" class="text-blue-500 hover:underline transition-colors duration-700">Reply</button>
+            </form>
+          </div>
+        <?php endwhile; else: ?>
+          <p class="text-center text-gray-500 dark:text-gray-400 transition-colors duration-700">No messages to show.</p>
+        <?php endif; ?>
+      </div>
+    </section>
 
-<script type="text/javascript" src="jquery/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+    <aside class="space-y-6 transition-colors duration-700">
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow transition-colors duration-700" data-aos="fade-left">
+        <h2 class="text-2xl font-semibold mb-4 text-blue-600 dark:text-blue-400 ">Filter</h2>
+        <form method="post" class="space-y-4">
+          <label class="block text-gray-700 dark:text-gray-300">Search Inbox</label>
+          <input name="s_inbox" class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600" placeholder="Sender username">
+          <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors duration-700">Filter Inbox</button>
+        </form>
+        <form method="post" class="space-y-4">
+          <label class="block text-gray-700 dark:text-gray-300 transition-colors duration-700">Search Sent</label>
+          <input name="s_sm" class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 transition-colors duration-700" placeholder="Recipient username">
+          <button class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors duration-700">Filter Sent</button>
+        </form>
+        <form method="post" class="flex space-x-2 space-y-2 mt-2">
+          <button name="inbox" class="w-1/2 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg transition-colors duration-700">Inbox</button>
+          <button name="sm" class="w-1/2 bg-yellow-500 hover:bg-yellow-600 text-white py-2 rounded-lg transition-colors duration-700">Sent</button>
+        </form>
+      </div>
+    </aside>
+  </div>
+</main>
 
-
+<footer class="bg-gray-100 dark:bg-gray-900 text-center py-6 mt-12 border-t dark:border-gray-700">
+  <p class="text-sm text-gray-600 dark:text-gray-400">&copy; <?= date('Y') ?> Freelance Marketplace</p>
+</footer>
 </body>
 </html>
