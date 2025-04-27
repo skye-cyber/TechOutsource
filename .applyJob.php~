@@ -108,7 +108,7 @@ if (isset($_POST["apply"]) && $msg == "") {
                             <a href="freelancerProfile.php" class="list-group-item"><span class="glyphicon glyphicon-home"></span> View profile</a>
                             <a href="editFreelancer.php" class="list-group-item"><span class="glyphicon glyphicon-inbox"></span> Edit Profile</a>
                             <a href="message.php" class="list-group-item"><span class="glyphicon glyphicon-envelope"></span> Messages</a>
-                            <a href="registration/logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span> Logout</a>
+                            <a href="logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span> Logout</a>
                         </ul>
                     </li>
                 </ul>

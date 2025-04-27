@@ -58,7 +58,7 @@ if (isset($_POST["register"])) {
 
     // Return validation errors if any
     if (!empty($errors)) {
-        $response['message'] = "Validation errors occurred.";
+        $response['message'] = "Validation error:";
         $response['errors'] = $errors;
         echo json_encode($response);
         exit();

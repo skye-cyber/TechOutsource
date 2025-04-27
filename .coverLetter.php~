@@ -57,7 +57,7 @@ if(isset($_SESSION["c_letter"])){
 			        	<a href="employerProfile.php" class="list-group-item"><span class="glyphicon glyphicon-home"></span>  View profile</a>
 			          	<a href="editEmployer.php" class="list-group-item"><span class="glyphicon glyphicon-inbox"></span>  Edit Profile</a>
 					  	<a href="message.php" class="list-group-item"><span class="glyphicon glyphicon-envelope"></span>  Messages</a> 
-					  	<a href="registration/logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span>  Logout</a>
+					  	<a href="logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span>  Logout</a>
 			        </ul>
 			    </li>
 			</ul>

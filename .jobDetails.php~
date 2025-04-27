@@ -32,7 +32,7 @@ if (isset($_SESSION["Username"])) {
          // Handle case where Usertype is not set but Username is (shouldn't happen with proper login)
          error_log("Usertype not set for user: " . $username);
          // Optionally redirect or handle differently
-         // header("location: registration/logout.php"); exit();
+         // header("location: logout.php"); exit();
     }
 } else {
     // User is not logged in, links will go to index.php
@@ -381,7 +381,7 @@ if ($stmt_employer === false) {
                              <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="<?php echo $linkEditPro; ?>"><i class="fas fa-inbox mr-2"></i> Edit Profile</a>
                              <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="message.php"><i class="fas fa-envelope mr-2"></i> Messages</a>
                              <div class="border-b border-gray-200 dark:border-gray-600 my-2"></div>
-                             <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="registration/logout.php"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
+                             <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="logout.php"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
                         </div>
                      </li>
                      <?php else: // Show login/register if not logged in ?>

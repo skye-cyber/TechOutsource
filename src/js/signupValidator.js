@@ -84,9 +84,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 window.location.href = data.redirect;
             } else {
                 // Display error from PHP response
-                showErrorModal("SignUp Error", data.message || 'SignUp failed', 5000);
-                emailError.textContent = data.message || 'SignUp failed';
-                console.log(data)
+                showErrorModal("SignUp Error", data.message, data.errors || 'SignUp failed', 5000);
+                emailError.innerText = data.message + '\n' + data.errors || 'SignUp failed';
+                console.log(data.errors)
             }
         } catch (err) {
             console.error('SignUp AJAX error', err);
@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", function() {
         hideErrorModal();
     });
 
-    function showErrorModal(title, message, timeout = null) {
+    function showErrorModal(title, message, errors, timeout = null) {
         modalTitle.textContent = title;
         modalMessage.textContent = message;
 

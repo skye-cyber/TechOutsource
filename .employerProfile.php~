@@ -88,7 +88,7 @@ $prev_hired = fetchHires($conn, $username, 0);
           <a href="postJob.php" class="block px-4 py-2 bg-indigo-400 text-white rounded-full hover:bg-indigo-500 transition-colors duration-700">Post a Job</a>
           <a href="editEmployer.php" class="block px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-700">Edit Profile</a>
           <a href="message.php" class="block px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-700">Messages</a>
-          <a href="registration/logout.php" class="block px-4 py-2 bg-red-400 text-white rounded-full hover:bg-red-500 transition-colors duration-700">Logout</a>
+          <a href="logout.php" class="block px-4 py-2 bg-red-400 text-white rounded-full hover:bg-red-500 transition-colors duration-700">Logout</a>
         </nav>
       </div>
 

@@ -74,7 +74,7 @@ $result = $conn->query($sql);
       <div class="relative" x-data="{ open: false }">
         <button @click="open = !open" class="flex items-center space-x-2">
           <svg class="w-6 h-6 fill-slate-900 dark:fill-white hover:fill-blue-300 transition-colors duration-700" viewBox="0 0 24 24"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-4.2 0-8 2.1-8 6v2h16v-2c0-3.9-3.8-6-8-6z"/></svg>
-          <span class="dark:text-white"><?= htmlspecialchars($username) ?></span>
+          <span class="dark:text"><?= htmlspecialchars($username) ?></span>
         </button>
         <div x-show="open" @click.away="open = false" x-cloak x-transition class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg">
           <a href="<?= $linkPro ?>" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600">Profile</a>
