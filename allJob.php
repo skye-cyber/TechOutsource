@@ -5,6 +5,11 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Determine user links
+$linkPro = "index.php"; // Default link if not logged in
+$linkEditPro = "index.php"; // Default link
+$linkBtn = "index.php"; // Default link
+$textBtn = "Edit Job Offery"; // Default text
+
 $username = $_SESSION['Username'] ?? '';
 $usertype = $_SESSION['Usertype'] ?? 0;
 if ($username) {

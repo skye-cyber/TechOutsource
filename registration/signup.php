@@ -102,7 +102,7 @@ if (isset($_POST["register"])) {
 
             $response['status'] = "success";
             $response['message'] = "Registration successful.";
-            $response['redirect'] = ($usertype === "freelancer") ? "freelancerProfile.php" : "employerProfile.php";
+            $response['redirect'] = ($usertype === "freelancer") ? "../freelancerProfile.php" : "../employerProfile.php";
             echo json_encode($response);
             exit();
         } else {

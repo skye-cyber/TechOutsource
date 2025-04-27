@@ -56,22 +56,26 @@ INSERT INTO `apply` (`f_username`, `job_id`, `bid`, `cv`, `cover_letter`) VALUES
 -- Table structure for table `employer`
 --
 CREATE TABLE `employer` (
-  `username` varchar(200) NOT NULL,
-  `password` varchar(200) NOT NULL,
-  `name` varchar(200) NOT NULL,
-  `email` varchar(200) NOT NULL,
-  `contactNo` varchar(200) NOT NULL,
-  `country` varchar(200) NOT NULL
+    `username` VARCHAR(200) NOT NULL,
+    `password` VARCHAR(200) NOT NULL,
+    `name` VARCHAR(200) NOT NULL,
+    `email` VARCHAR(200) NOT NULL,
+    `contactNo` VARCHAR(200) NOT NULL,
+    `country` VARCHAR(200) NOT NULL,
+    `company` VARCHAR(255) NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
-INSERT INTO `employer` (`username`, `password`, `name`, `email`, `contactNo`, `country`) VALUES
-('aaa', 'aaa', 'aaa', 'aaa', 'aaa', 'other'),
-('aaa1', 'aaa', 'aaa', 'aaa', 'aaa', 'other'),
-('dddddd', '1dddddd', 'Ddd Dd', 'd@d', '123456', 'dfd'),
-('employer1', '111111', 'Employer One', 'e@e1', '123456', 'Bangladesh'),
-('employer2', '111111', 'Employer Two', 'e@e2', '123456', 'Bangladesh'),
-('employer3', '111111', 'Employer Three', 'e@e3', '123456', 'Bangladesh'),
-('rrrupom', 'rrrupom', 'Rupom', 'rupom', 'rupom', 'other');
+INSERT INTO `employer` (`username`, `password`, `name`, `email`, `contactNo`, `country`, `company`) VALUES
+('aaa', 'aaa', 'aaa', 'aaa', 'aaa', 'other', 'franchise'),
+('aaa1', 'aaa', 'aaa', 'aaa', 'aaa', 'other', NULL),
+('dddddd', '1dddddd', 'Ddd Dd', 'd@d', '123456', 'dfd', NULL),
+('employer1', '111111', 'Employer One', 'e@e1', '123456', 'Bangladesh', NULL),
+('employer2', '111111', 'Employer Two', 'e@e2', '123456', 'Bangladesh', NULL),
+('employer3', '111111', 'Employer Three', 'e@e3', '123456', 'Bangladesh', NULL),
+('rrrupom', 'rrrupom', 'Rupom', 'rupom', 'rupom', 'other', 'unkown');
+
+ALTER TABLE `employer`
+ADD COLUMN `profile_sum` VARCHAR(255) NULL;
 
 
 -- --------------------------------------------------------

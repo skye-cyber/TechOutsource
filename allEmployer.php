@@ -59,9 +59,9 @@ $result = $conn->query($sql);
     [x-cloak] { display: none; }
   </style>
 </head>
-<body class="bg-gray-100 dark:bg-dark text-gray-900 dark:text-dark transition-colors duration-500">
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-dark transition-colors duration-500">
 
-<nav class="bg-white dark:bg-gray-800 shadow sticky top-0 z-50">
+<nav class="bg-white dark:bg-gray-800 shadow sticky top-0 z-50 dark:text-white">
   <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
     <a href="index.php" class="text-2xl font-bold text-blue-600 dark:text-blue-400 hover:scale-105 transition">Marketplace</a>
     <div class="flex items-center space-x-6">
@@ -98,7 +98,7 @@ $result = $conn->query($sql);
             <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-gray-200"><?= $emp['name'] ? htmlspecialchars($emp['name']) : 'NULL' ?></h2>
             <p class="text-sm text-gray-600 dark:text-gray-400">Username: <span class="font-medium"><?= htmlspecialchars($emp['username']) ?></span></p>
             <p class="text-sm text-gray-600 dark:text-gray-400">Email: <a href="mailto:<?= $emp['email'] ? htmlspecialchars($emp['email']) : 'NULL' ?>" class="text-blue-500 hover:underline"><?= htmlspecialchars($emp['email']) ?></a></p>
-            <p class="text-sm text-gray-600 dark:text-gray-400">Company: <span class="font-medium"><?= $emp['country'] ? htmlspecialchars($emp['country']) : 'NULL'?></span></p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Country: <span class="font-medium"><?= $emp['country'] ? htmlspecialchars($emp['country']) : 'NULL'?></span></p>
             <p class="text-sm text-gray-600 dark:text-gray-400">contactNo: <span class="font-medium text-green-400"><?= $emp['contactNo'] ? htmlspecialchars($emp['contactNo']) : 'NULL'?></span></p>
             <button type="submit" class="mt-4 w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition">View Profile</button>
           </form>
@@ -114,7 +114,7 @@ $result = $conn->query($sql);
         <?php foreach(['s_username'=>'Username','s_name'=>'Name','s_email'=>'Email'] as $input=>$label): ?>
           <form method="post" action="allEmployer.php" class="space-y-2 mb-4">
             <label class="block text-gray-700 dark:text-gray-300"><?= $label ?></label>
-            <input name="<?= $input ?>" class="w-full p-2 rounded border focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600" placeholder="<?= $label ?>">
+            <input name="<?= $input ?>" class="dark:text-white w-full p-2 rounded border focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600" placeholder="<?= $label ?>">
             <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg">Search</button>
           </form>
         <?php endforeach; ?>

@@ -1,389 +1,158 @@
-<?php include('server.php');
-if(isset($_SESSION["Username"])){
-	$username=$_SESSION["Username"];
-}
-else{
-	$username="";
-	//header("location: index.php");
-}
+<?php
+include('db/server.php');
 
-if(isset($_POST["jid"])){
-	$_SESSION["job_id"]=$_POST["jid"];
-	header("location: jobDetails.php");
+$username = $_SESSION["Username"] ?? "";
+
+if (isset($_POST["jid"])) {
+    $_SESSION["job_id"] = $_POST["jid"];
+    header("location: jobDetails.php");
+    exit();
 }
 
-if(isset($_POST["f_user"])){
-	$_SESSION["f_user"]=$_POST["f_user"];
-	header("location: viewFreelancer.php");
+if (isset($_POST["f_user"])) {
+    $_SESSION["f_user"] = $_POST["f_user"];
+    header("location: viewFreelancer.php");
+    exit();
 }
 
-
-$sql = "SELECT * FROM employer WHERE username='$username'";
-$result = $conn->query($sql);
+// Fetch employer info
+$emp = [];
+$sql = "SELECT * FROM employer WHERE username=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("s", $username);
+$stmt->execute();
+$result = $stmt->get_result();
 if ($result->num_rows > 0) {
-    // output data of each row
-    while($row = $result->fetch_assoc()) {
-        $name=$row["Name"];
-        $email=$row["email"];
-        $contactNo=$row["contact_no"];
-        $gender=$row["gender"];
-        $birthdate=$row["birthdate"];
-        $address=$row["address"];
-        $profile_sum=$row["profile_sum"];
-        $company=$row["company"];
-        }
-} else {
-    echo "0 results";
+    $emp = $result->fetch_assoc();
 }
 
-$sql = "SELECT * FROM job_offer WHERE e_username='$username' and valid=1 ORDER BY timestamp DESC";
-$result = $conn->query($sql);
+function fetchOffers($conn, $username, $valid) {
+    $sql = "SELECT * FROM job_offer WHERE e_username=? AND valid=? ORDER BY timestamp DESC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("si", $username, $valid);
+    $stmt->execute();
+    return $stmt->get_result();
+}
 
- ?>
+function fetchHires($conn, $username, $valid) {
+    $sql = "SELECT jo.job_id, jo.title, s.f_username, jo.timestamp FROM job_offer jo JOIN selected s ON jo.job_id=s.job_id WHERE s.e_username=? AND s.valid=? ORDER BY jo.timestamp DESC";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("si", $username, $valid);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+$curOffers = fetchOffers($conn, $username, 1);
+$prevOffers = fetchOffers($conn, $username, 0);
+$hired = fetchHires($conn, $username, 1);
+$prev_hired = fetchHires($conn, $username, 0);
+?>
 
 <!DOCTYPE html>
-<html>
+<html lang="en" class="dark">
 <head>
-	<title>Employer profile</title>
-	<meta charset="utf-8">
-  	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap.min.css">
-	<link rel="stylesheet" type="text/css" href="bootstrap/css/bootstrap-theme.min.css">
-	<link rel="stylesheet" type="text/css" href="awesome/css/fontawesome-all.min.css">
-
-<style>
-	body{padding-top: 3%;margin: 0;}
-	.card{box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19); background:#fff}
-</style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employer Profile</title>
+  <script src='../src/js/themes.js'></script>
+  <script src='../src/js/packed_animator.js'></script>
+  <link rel="stylesheet" href="../src/css/styles.css">
 </head>
-<body>
+<body class="bg-gradient-to-br from-pink-100 via-orange-50 to-blue-100 dark:from-blue-900 dark:via-purple-800 dark:to-pink-900 min-h-screen flex flex-col gradientTransition">
 
-<!--Navbar menu-->
-<nav class="navbar navbar-inverse navbar-fixed-top" id="my-navbar">
-	<div class="container">
-		<div class="navber-header">
-			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse">
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			</button>
-			<a href="index.php" class="navbar-brand">Freelance Marketplace</a>
-		</div>
-		<div class="collapse navbar-collapse" id="navbar-collapse">
-			<ul class="nav navbar-nav navbar-right">
-				<li><a href="allJob.php">Browse all jobs</a></li>
-				<li><a href="allFreelancer.php">Browse Freelancers</a></li>
-				<li><a href="allEmployer.php">Browse Employers</a></li>
-				<li class="dropdown" style="background:#000;padding:0 20px 0 20px;">
-			        <a class="dropdown-toggle" data-toggle="dropdown" href="#"><span class="glyphicon glyphicon-user"></span> <?php echo $username; ?>
-			        </a>
-			        <ul class="dropdown-menu list-group list-group-item-info">
-			        	<a href="employerProfile.php" class="list-group-item"><span class="glyphicon glyphicon-home"></span>  View profile</a>
-			          	<a href="editEmployer.php" class="list-group-item"><span class="glyphicon glyphicon-inbox"></span>  Edit Profile</a>
-					  	<a href="message.php" class="list-group-item"><span class="glyphicon glyphicon-envelope"></span>  Messages</a> 
-					  	<a href="logout.php" class="list-group-item"><span class="glyphicon glyphicon-ok"></span>  Logout</a>
-			        </ul>
-			    </li>
-			</ul>
-		</div>		
-	</div>	
-</nav>
-<!--End Navbar menu-->
-
-
-<!--main body-->
-<div style="padding:1% 3% 1% 3%;">
-<div class="row">
-
-<!--Column 1-->
-	<div class="col-lg-3">
-
-<!--Main profile card-->
-		<div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-			<p></p>
-			<img src="image/img04.jpg">
-			<h2><?php echo $name; ?></h2>
-			<p><span class="glyphicon glyphicon-user"></span> <?php echo $username; ?></p>
-			<ul class="list-group">
-				<a href="postJob.php" class="list-group-item list-group-item-info">Post a job offer</a>
-	          	<a href="editEmployer.php" class="list-group-item list-group-item-info">Edit Profile</a>
-			  	<a href="message.php" class="list-group-item list-group-item-info">Messages</a>
-			  	<a href="logout.php" class="list-group-item list-group-item-info">Logout</a>
-	        </ul>
-	    </div>
-<!--End Main profile card-->
-
-<!--Contact Information-->
-		<div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-			<div class="panel panel-success">
-			  <div class="panel-heading"><h4>Contact Information</h4></div>
-			</div>
-			<div class="panel panel-success">
-			  <div class="panel-heading">Email</div>
-			  <div class="panel-body"><?php echo $email; ?></div>
-			</div>
-			<div class="panel panel-success">
-			  <div class="panel-heading">Mobile</div>
-			  <div class="panel-body"><?php echo $contactNo; ?></div>
-			</div>
-			<div class="panel panel-success">
-			  <div class="panel-heading">Address</div>
-			  <div class="panel-body"><?php echo $address; ?></div>
-			</div>
-		</div>
-<!--End Contact Information-->
-
-<!--Reputation-->
-		
-<!--End Reputation-->
-
-	</div>
-<!--End Column 1-->
-
-<!--Column 2-->
-	<div class="col-lg-7">
-
-<!--Employer Profile Details-->	
-		<div class="card" style="padding:20px 20px 5px 20px;margin-top:20px">
-			<div class="panel panel-primary">
-			  <div class="panel-heading"><h3>Employer Profile Details</h3></div>
-			</div>
-			<div class="panel panel-primary">
-			  <div class="panel-heading">Company Name</div>
-			  <div class="panel-body"><h4><?php echo $company; ?></h4></div>
-			</div>
-			
-			<div class="panel panel-primary">
-			  <div class="panel-heading">Profile Summery</div>
-			  <div class="panel-body"><h4><?php echo $profile_sum; ?></h4></div>
-			</div>
-			<div class="panel panel-primary">
-			  <div class="panel-heading">Current Job Offerings</div>
-			  <div class="panel-body"><h4>
-                  <table style="width:100%">
-                      <tr>
-                          <td>Job Id</td>
-                          <td>Title</td>
-                          <td>Posted on</td>
-                      </tr>
-                      <?php 
-                      if ($result->num_rows > 0) {
-                            // output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                $job_id=$row["job_id"];
-                                $title=$row["title"];
-                                $timestamp=$row["timestamp"];
-
-                                echo '
-                                <form action="employerProfile.php" method="post">
-                                <input type="hidden" name="jid" value="'.$job_id.'">
-                                    <tr>
-                                    <td>'.$job_id.'</td>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$title.'"></td>
-                                    <td>'.$timestamp.'</td>
-                                    </tr>
-                                </form>
-                                ';
-
-                                }
-                        } else {
-                            echo "<tr><td>Nothing to show</td></tr>";
-                        }
-
-                       ?>
-                  </table>
-              </h4></div>
-			</div>
-			<div class="panel panel-primary">
-			  <div class="panel-heading">Privious Job Offerings</div>
-			  <div class="panel-body"><h4>
-                  <table style="width:100%">
-                      <tr>
-                          <td>Job Id</td>
-                          <td>Title</td>
-                          <td>Posted on</td>
-                      </tr>
-                      <?php 
-                      	$sql = "SELECT * FROM job_offer WHERE e_username='$username' and valid=0 ORDER BY timestamp DESC";
-						$result = $conn->query($sql);
-                      if ($result->num_rows > 0) {
-                            // output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                $job_id=$row["job_id"];
-                                $title=$row["title"];
-                                $timestamp=$row["timestamp"];
-
-                                echo '
-                                <form action="employerProfile.php" method="post">
-                                <input type="hidden" name="jid" value="'.$job_id.'">
-                                    <tr>
-                                    <td>'.$job_id.'</td>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$title.'"></td>
-                                    <td>'.$timestamp.'</td>
-                                    </tr>
-                                </form>
-                                ';
-
-                                }
-                        } else {
-                            echo "<tr><td>Nothing to show</td></tr>";
-                        }
-
-                       ?>
-                  </table>
-              </h4></div>
-			</div>
-			<div class="panel panel-primary">
-			  <div class="panel-heading">Currently Hired Freelancers</div>
-			  <div class="panel-body"><h4>
-                  <table style="width:100%">
-                      <tr>
-                          <td>Job Id</td>
-                          <td>Title</td>
-                          <td>Freelancer</td>
-                      </tr>
-                      <?php 
-                      	$sql = "SELECT * FROM job_offer,selected WHERE job_offer.job_id=selected.job_id AND selected.e_username='$username' AND selected.valid=1 ORDER BY job_offer.timestamp DESC";
-						$result = $conn->query($sql);
-                      if ($result->num_rows > 0) {
-                            // output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                $job_id=$row["job_id"];
-                                $title=$row["title"];
-                                $f_username=$row["f_username"];
-                                $timestamp=$row["timestamp"];
-
-                                echo '
-                                <form action="employerProfile.php" method="post">
-                                <input type="hidden" name="jid" value="'.$job_id.'">
-                                    <tr>
-                                    <td>'.$job_id.'</td>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$title.'"></td>
-                                    </form>
-                                    <form action="employerProfile.php" method="post">
-                                    <input type="hidden" name="f_user" value="'.$f_username.'">
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$f_username.'"></td>
-                                    <td>'.$timestamp.'</td>
-                                    </tr>
-                                </form>
-                                ';
-
-                                }
-                        } else {
-                            echo "<tr><td>Nothing to show</td></tr>";
-                        }
-
-                       ?>
-                  </table>
-              </h4></div>
-			</div>
-			<div class="panel panel-primary">
-			  <div class="panel-heading">Previously Hired Freelancers</div>
-			  <div class="panel-body"><h4>
-                  <table style="width:100%">
-                      <tr>
-                          <td>Job Id</td>
-                          <td>Title</td>
-                          <td>Freelancer</td>
-                      </tr>
-                      <?php 
-                      	$sql = "SELECT * FROM job_offer,selected WHERE job_offer.job_id=selected.job_id AND selected.e_username='$username' AND selected.valid=0 ORDER BY job_offer.timestamp DESC";
-						$result = $conn->query($sql);
-                      if ($result->num_rows > 0) {
-                            // output data of each row
-                            while($row = $result->fetch_assoc()) {
-                                $job_id=$row["job_id"];
-                                $title=$row["title"];
-                                $f_username=$row["f_username"];
-                                $timestamp=$row["timestamp"];
-
-                                echo '
-                                <form action="employerProfile.php" method="post">
-                                <input type="hidden" name="jid" value="'.$job_id.'">
-                                    <tr>
-                                    <td>'.$job_id.'</td>
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$title.'"></td>
-                                    </form>
-                                    <form action="employerProfile.php" method="post">
-                                    <input type="hidden" name="f_user" value="'.$f_username.'">
-                                    <td><input type="submit" class="btn btn-link btn-lg" value="'.$f_username.'"></td>
-                                    <td>'.$timestamp.'</td>
-                                    </tr>
-                                </form>
-                                ';
-
-                                }
-                        } else {
-                            echo "<tr><td>Nothing to show</td></tr>";
-                        }
-
-                       ?>
-                  </table>
-              </h4></div>
-			</div>
-		</div>
-<!--End Employer Profile Details-->
-
-	</div>
-<!--End Column 2-->
-
-
-<!--Column 3-->
-	<div class="col-lg-2">
-<!--My Wallet-->
-		
-<!--End My Wallet-->
-
-<!--Social Network Profiles-->
-		
-<!--End Social Network Profiles-->
-
-	</div>
-<!--End Column 3-->
-
+<!-- Theme Toggle -->
+<div class="absolute top-1 right-4 z-10 select-none">
+  <label class="inline-flex items-center cursor-pointer">
+    <input id="theme-toggle" type="checkbox" class="sr-only peer" />
+    <div class="w-12 h-7 bg-gray-300 rounded-full peer-checked:bg-indigo-400 transition-colors"></div>
+    <div class="absolute w-6 h-6 bg-white rounded-full shadow transform peer-checked:translate-x-6 transition-transform transition-colors duration-700"></div>
+  </label>
 </div>
-</div>
-<!--End main body-->
 
+<!-- Main Container -->
+<div class="container mx-auto p-4 flex-1 mt-2" data-aos="fade-up" data-aos-duration="800">
+  <div class="grid grid-cols-12 gap-4">
 
-<!--Footer-->
-<div class="text-center" style="padding:4%;background:#222;color:#fff;margin-top:20px;">
-	<div class="row">
-			<div class="col-lg-3">
-			<h3>Quick Links</h3>
-			<p><a href="index.php">Home</a></p>
-			<p><a href="allJob.php">Browse all jobs</a></p>
-			<p><a href="allFreelancer.php">Browse Freelancers</a></p>
-			<p><a href="allEmployer.php">Browse Employers</a></p>
-		</div>
-		<div class="col-lg-3">
-			<h3>About Us</h3>
-			<p>Freelance Marketplace</p>
-			
-			<p>Nairobi, Kenya</p>
-			<p>&copy 2023</p>
+    <!-- Sidebar -->
+    <aside class="col-span-12 lg:col-span-3 space-y-4" data-aos="fade-right" data-aos-delay="200">
+      <div class="bg-white dark:bg-gray-800 bg-opacity-80 rounded-2xl p-6 shadow-lg backdrop-blur-md transition-colors duration-700">
+        <section class="flex justify-center items-center">
+            <div class="w-24 h-24 bg-gradient-to-tr from-purple-300 to-pink-300 dark:from-indigo-600 dark:to-purple-600 rounded-full flex items-center justify-center shadow-md transition-all transform duration-700 hover:rotate-6">
+            <span class="text-3xl font-semibold text-white transition-colors duration-1000"><?php echo $username ? htmlspecialchars(substr($username, 0, 1)) : 'U'; ?></span>
+            </div>
+        </section>
+        <h2 class="text-xl font-bold text-gray-800 dark:text-gray-50"><?php echo htmlspecialchars($emp['Name'] ?? ''); ?></h2>
+        <p class="text-gray-600 dark:text-gray-300 mb-4">@<?php echo htmlspecialchars($username); ?></p>
+        <nav class="space-y-2">
+          <a href="index.php" class="block px-4 py-2 bg-indigo-700 text-white rounded-full hover:bg-[#aa55ff] transition-colors duration-700">Home</a>
+          <a href="postJob.php" class="block px-4 py-2 bg-indigo-400 text-white rounded-full hover:bg-indigo-500 transition-colors duration-700">Post a Job</a>
+          <a href="editEmployer.php" class="block px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-700">Edit Profile</a>
+          <a href="message.php" class="block px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-700">Messages</a>
+          <a href="logout.php" class="block px-4 py-2 bg-red-400 text-white rounded-full hover:bg-red-500 transition-colors duration-700">Logout</a>
+        </nav>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 bg-opacity-80 rounded-2xl p-6 shadow-lg backdrop-blur-md transition-colors duration-700">
+        <h4 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2 transition-colors duration-700">Contact Info</h4>
+        <p class="text-gray-600 dark:text-gray-300 transition-colors duration-700"><strong>Email:</strong> <span class="text-gray-600 dark:text-sky-500"><?php echo htmlspecialchars($emp['email'] ?? ''); ?></span></p>
+        <p class="text-gray-600 dark:text-gray-300 transition-colors duration-700"><strong>Phone:</strong><span class="text-gray-600 dark:text-blue-500"> <?php echo htmlspecialchars($emp['contactNo'] ?? ''); ?></span></p>
+        <p class="text-gray-600 dark:text-gray-300 transition-colors duration-700"><strong>Address:</strong> <span class="text-gray-600 dark:text-[#ff557f] transition-colors duration-700"><?php echo htmlspecialchars($emp['country'] ?? ''); ?></span></p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="col-span-12 lg:col-span-9 space-y-6" data-aos="fade-left" data-aos-delay="400">
+      <div class="bg-white dark:bg-gray-800 bg-opacity-80 rounded-2xl p-6 shadow-lg backdrop-blur-md transition-colors duration-700">
+        <h3 class="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-4 transition-colors duration-700">Employer Details</h3>
+        <p class="text-gray-600 dark:text-gray-300 transition-colors duration-700"><strong>Company:</strong> <span class="text-gray-600 dark:text-sky-500"><?php echo htmlspecialchars($emp['company'] ?? ''); ?></span></p>
+        <p class="text-gray-600 dark:text-gray-300 mt-2 transition-colors duration-700"><strong>Summary:</strong><span class="text-gray-600 dark:text-pink-500"> <?php echo htmlspecialchars($emp['profile_sum'] ?? ''); ?></span></p>
+      </div>
+
+      <?php function renderTable($title, $resultSet) { ?>
+      <div class="bg-white dark:bg-slate-900 bg-opacity-80 rounded-2xl p-6 shadow-lg backdrop-blur-md transition-colors duration-700" data-aos="fade-up">
+        <h4 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3 transition-colors duration-700"><?php echo htmlspecialchars($title); ?></h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead>
+              <tr class="border-b border-gray-200 dark:border-gray-700 transition-colors duration-700">
+                <th class="py-2 dark:text-[#00aaff] transition-colors duration-700">Job ID</th>
+                <th class="py-2 dark:text-[#55aaff] transition-colors duration-700">Title</th>
+                <?php if (str_contains($title, 'Freelancer')) echo '<th class="py-2 py-2 dark:text-[#a3a3f3]">Freelancer</th>'; ?>
+                <th class="py-2 dark:text-[#5555ff] transition-colors duration-700">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if ($resultSet && $resultSet->num_rows > 0): while ($r = $resultSet->fetch_assoc()): ?>
+                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-700">
+                  <td class="py-2 dark:text-[#ffaaff] transition-colors duration-700"><?php echo htmlspecialchars($r['job_id']); ?></td>
+                  <td class="py-2">
+                    <form method="post">
+                      <input type="hidden" name="jid" value="<?php echo htmlspecialchars($r['job_id']); ?>">
+                      <button type="submit" class="text-indigo-500 hover:underline dark:text-[#00aaff] transition-colors duration-700"><?php echo htmlspecialchars($r['title']); ?></button>
+                    </form>
+                  </td>
+                  <?php if (isset($r['f_username'])): ?>
+                    <td class="py-2 dark:text-gray-100 transition-colors duration-700"><?php echo htmlspecialchars($r['f_username']); ?></td>
+                  <?php endif; ?>
+                  <td class="py-2 dark:text-gray-100 transition-colors duration-700"><?php echo htmlspecialchars($r['timestamp']); ?></td>
+                </tr>
+              <?php endwhile; else: ?>
+                <tr><td colspan="4" class="py-2 text-center dark:text-gray-100 transition-colors duration-700">Nothing to show</td></tr>
+              <?php endif; ?>
+            </tbody>
+          </table>
         </div>
-        <div class="col-lg-3">
-            <h3>Contact Us</h3>
-            <p>+254 725 146 071</p>
-            <p>Nairobi, Kenya</p>
-            <p>&copy 2023</p>
-		</div>
-		<div class="col-lg-3">
-			<h3>Social Contact</h3>
-			<p style="font-size:20px;color:#3B579D;"><i class="fab fa-facebook-square"> Facebook</i></p>
-			<p style="font-size:20px;color:#D34438;"><i class="fab fa-google-plus-square"> Google</i></p>
-			<p style="font-size:20px;color:#2CAAE1;"><i class="fab fa-twitter-square"> Twitter</i></p>
-			<p style="font-size:20px;color:#0274B3;"><i class="fab fa-linkedin"> Linkedin</i></p>
-		</div>
-	</div>
+      </div>
+      <?php } ?>
+
+      <?php renderTable('Current Job Offerings', $curOffers); ?>
+      <?php renderTable('Previous Job Offerings', $prevOffers); ?>
+      <?php renderTable('Currently Hired Freelancers', $hired); ?>
+      <?php renderTable('Previous Freelancers', $prev_hired); ?>
+
+    </main>
+  </div>
 </div>
-<!--End Footer-->
 
-
-<script type="text/javascript" src="jquery/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 </body>
 </html>

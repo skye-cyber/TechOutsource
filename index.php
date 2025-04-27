@@ -80,9 +80,11 @@ else if (!isset($_SESSION["Username"])) {
             <a href="#contact" class="ml-8 inline-flex items-center px-1 pt-1 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-[#9097a6]">Contact</a>
             </nav>
           </div>
-          <div class="hidden sm:flex sm:items-center">
-            <a href="registration/login.html" class="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-[#9097a6]">Login</a>
-            <a href="registration/signup.html" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 ">Sign Up</a>
+          <?php if (empty($usertype) || ($usertype != 1 && $usertype != 2)): ?>
+              <div class="hidden sm:flex sm:items-center">
+                  <a href="registration/login.html" class="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-[#9097a6]">Login</a>
+                  <a href="registration/signup.html" class="ml-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">Sign Up</a>
+          <?php endif; ?>
 
 
             <!-- Theme Toggle Switch -->

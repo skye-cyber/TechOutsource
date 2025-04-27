@@ -1,4 +1,4 @@
-<?php include('server.php');
+<?php include('db/server.php');
 if (isset($_SESSION["Username"])) {
     $username = $_SESSION["Username"];
     if ($_SESSION["Usertype"] == 1) {

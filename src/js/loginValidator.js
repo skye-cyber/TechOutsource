@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const passInput = document.getElementById('password');
     const emailError = document.getElementById('emailError');
     const passError = document.getElementById('passwordError');
-    const usertype = document.querySelector('input[name="usertype"]:checked');
     const usertypeError = document.getElementById('usertypeError');
     const shakeClass = 'animate-shake';
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -12,15 +11,20 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async e => {
         e.preventDefault();
 
+        let usertype = document.querySelector('input[name="usertype"]:checked') || null;
+
         emailError.textContent = '';
         passError.textContent = '';
         let valid = true;
         const emailVal = emailInput.value.trim();
         const passVal = passInput.value;
 
-        if (!usertype.value) {
+        if (!usertype || !usertype.value) {
             valid = false;
             usertypeError.textContent = 'Please select user type'
+            triggerShake(usertypeError);
+            // will select element once again
+            // usertype = document.querySelector('input[name="usertype"]:checked') || null;
         }
 
         if (!emailVal) {
@@ -61,18 +65,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 triggerShake(emailInput);
                 triggerShake(passInput);
                 throw new Error('Network response was not ok ' + resp.statusText);
+            } else if (data.status === "error") {
+                passError.textContent = data.message || 'Login failed';
+                triggerShake(passInput);
+            } else {
+                window.location.href = data.redirect;
             }
-            window.location.href = data.redirect;
-    } catch (err) {
-        console.error('Login AJAX error', err);
-        emailError.textContent = `Server error — ${err}`;
-    }
-});
+        } catch (err) {
+            console.error('Login AJAX error', err);
+            emailError.textContent = `Server error — ${err}`;
+        }
+    });
 
-function triggerShake(el) {
-    el.classList.add(shakeClass);
-    el.addEventListener('animationend', () => {
-        el.classList.remove(shakeClass);
-    }, { once: true });
-}
+    function triggerShake(el) {
+        el.classList.add(shakeClass);
+        el.addEventListener('animationend', () => {
+            el.classList.remove(shakeClass);
+        }, { once: true });
+    }
 });

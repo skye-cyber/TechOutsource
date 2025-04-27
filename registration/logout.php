@@ -4,5 +4,5 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 session_unset();
 session_destroy();
-header("location: login.html");
+header("location: registration/login.html");
 ?>
