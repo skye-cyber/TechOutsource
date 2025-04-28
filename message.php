@@ -83,9 +83,22 @@ $result = $conn->query($sql);
           <a href="registration/logout.php" class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 text-red-500">Logout</a>
         </div>
       </div>
-      <button id="theme-toggle" @click="dark = !dark; localStorage.dark = dark" class="bg-gray-300 dark:bg-gray-600 p-2 rounded-lg">
-        <span x-show="!dark">🌙</span><span x-show="dark"></span>
-      </button>
+
+        <!-- Theme Toggle Switch -->
+        <div class="flex items-center">
+            <label class="relative inline-block w-16 h-8 cursor-pointer select-none ml-4">
+                <input type="checkbox" id="theme-toggle" class="peer hidden">
+                <span
+                    class="absolute inset-0 bg-gray-300 peer-checked:bg-blue-500 transition rounded-full"
+                ></span>
+                <span
+                    class="absolute left-1 bottom-1 w-6 h-6 bg-white rounded-full transition peer-checked:translate-x-8"
+                ></span>
+            </label>
+
+            <span class="text-teal-950 font-bold dark:text-gray-200 ml-2">Dark</span>
+        </div>
+       </div>
     </div>
   </div>
 </nav>
@@ -98,14 +111,14 @@ $result = $conn->query($sql);
         <?php if($result->num_rows): while($msg = $result->fetch_assoc()):
             $other = ($mode=='inbox' ? $msg['sender'] : $msg['receiver']); ?>
           <div data-aos="fade-up" class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-lg transition-colors duration-700">
-            <p class="text-gray-800 dark:text-gray-200 mb-2 transition-colors duration-700">"<?= htmlspecialchars($msg['msg']) ?>"</p>
+            <p class="text-gray-800 dark:text-gray-200 mb-2 transition-colors duration-700"><?= htmlspecialchars_decode(trim($msg['msg'],'"')) ?></p>
             <div class="flex justify-between text-sm text-gray-500 dark:text-gray-400">
               <span><?= $mode=='inbox' ? 'From' : 'To' ?>: <?= htmlspecialchars($other) ?></span>
               <span><?= date('M j, Y H:i', strtotime($msg['timestamp'])) ?></span>
             </div>
             <form method="post" action="message.php" class="mt-2">
               <input type="hidden" name="rep" value="<?= htmlspecialchars($other) ?>">
-              <button type="submit" class="text-blue-500 hover:underline transition-colors duration-700">Reply</button>
+              <a href="sendMessage.php"><button type="submit" class="text-blue-500 hover:underline transition-colors duration-700">Reply</button></a>
             </form>
           </div>
         <?php endwhile; else: ?>

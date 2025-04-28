@@ -1,2 +1,0 @@
-for nanyki water serve three counties. 
-use the county id which occupies most of the area.

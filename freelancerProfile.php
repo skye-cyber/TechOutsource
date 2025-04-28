@@ -80,43 +80,37 @@ if ($stmt_fetch_freelancer === false) {
 
 
 // --- Fetch Records (Offers and Hires) ---
-
 function fetchRecords($conn, $username, $valid, $type = 'offer') {
     $query = ($type === 'hire') ?
-        "SELECT jo.job_id, jo.title, s.f_username, s.price, jo.timestamp FROM job_offer jo JOIN selected s ON jo.job_id=s.job_id WHERE s.e_username=? AND s.valid=? ORDER BY jo.timestamp DESC" :
-        "SELECT job_id, title, timestamp FROM job_offer WHERE e_username=? AND valid=? ORDER BY timestamp DESC"; // Removed unused columns from offer query
-
-    $stmt = $conn->prepare($query);
-
-    if ($stmt === false) {
-        error_log("Prepare failed for fetching records ($type): " . $conn->error);
-        return false; // Indicate failure
-    }
-
-    // Bind parameters based on query type
-    if ($type === 'hire') {
-         $stmt->bind_param('si', $username, $valid); // s=string, i=integer
-    } else {
-         $stmt->bind_param('si', $username, $valid); // s=string, i=integer
-    }
-
-
-    if (!$stmt->execute()) {
-        error_log("Execute failed for fetching records ($type): " . $stmt->error);
-        $stmt->close();
-        return false; // Indicate failure
-    }
-
-    $result = $stmt->get_result();
-    $stmt->close();
-    return $result;
+    "SELECT jo.job_id, jo.title, s.f_username, s.price, jo.timestamp FROM job_offer jo JOIN selected s ON jo.job_id=s.job_id WHERE s.e_username=? AND s.valid=? ORDER BY jo.timestamp DESC" :
+    "SELECT job_id, title, timestamp FROM job_offer WHERE e_username=? AND valid=? ORDER BY timestamp DESC";
+         $stmt = $conn->prepare($query);
+         if ($stmt === false) {
+             error_log("Prepare failed for fetching records ($type): " . $conn->error);
+             return false;
+         }
+         $stmt->bind_param('si', $username, $valid);
+         if (!$stmt->execute()) {
+             error_log("Execute failed for fetching records ($type): " . $stmt->error);
+             $stmt->close();
+             return false;
+         }
+         $result = $stmt->get_result();
+         $stmt->close();
+         return $result;
 }
 
 // Fetch data for tables
 $curOffers = fetchRecords($conn, $username, 1);
 $prevOffers = fetchRecords($conn, $username, 0);
-$hired = fetchRecords($conn, $username, 1, 'hire'); // valid=1 for current/active hires
-$prevHired = fetchRecords($conn, $username, 0, 'hire'); // valid=0 for previous/completed hires
+$hired = fetchRecords($conn, $username, 1, 'hire');
+$prevHired = fetchRecords($conn, $username, 0, 'hire');
+
+if ($hired === false) {
+    error_log("Error fetching current hires.");
+} else {
+    error_log("Current hires fetched successfully: " . $hired->num_rows);
+}
 
 // Check if any fetch failed and set error message if necessary
 if ($curOffers === false || $prevOffers === false || $hired === false || $prevHired === false) {
@@ -290,7 +284,7 @@ if ($curOffers === false || $prevOffers === false || $hired === false || $prevHi
                              <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="<?php echo $linkEditPro; ?>"><i class="fas fa-inbox mr-2"></i> Edit Profile</a>
                              <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="message.php"><i class="fas fa-envelope mr-2"></i> Messages</a>
                              <div class="border-b border-gray-200 dark:border-gray-600 my-2"></div>
-                             <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="registration/registration/logout.php"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
+                             <a class="block px-4 py-2 hover:bg-gray-200 dark:hover:bg-gray-600 no-underline text-sm transition duration-300" href="registration/logout.php"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
                         </div>
                      </li>
                      <?php else: // Show login/register if not logged in ?>
@@ -355,48 +349,87 @@ if ($curOffers === false || $prevOffers === false || $hired === false || $prevHi
                      <?php endif; ?>
                 </div>
 
-                <?php function renderTable($title, $resultSet) { ?>
-                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg transition-colors duration-1000" data-aos="fade-up">
-                    <h4 class="text-lg font-semibold text-heading mb-4"><?php echo htmlspecialchars($title); ?></h4> <div class="overflow-x-auto">
-                        <table class="min-w-full table-auto"> <thead>
-                                <tr class="border-b border-gray-200 dark:border-gray-700 transition-colors duration-1000 text-subheading"> <th class="px-4 py-2 text-left">Job ID</th>
-                                    <th class="px-4 py-2 text-left">Title</th>
-                                    <?php if (str_contains($title, 'Hire')): ?> <th class="px-4 py-2 text-left">Freelancer</th>
-                                         <th class="px-4 py-2 text-left">Price</th> <?php endif; ?>
-                                    <th class="px-4 py-2 text-left">Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if ($resultSet && $resultSet->num_rows > 0): while ($r = $resultSet->fetch_assoc()): ?>
-                                    <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 ease-in-out"> <td class="px-4 py-3 text-body-light dark:text-body-dark"><?php echo htmlspecialchars($r['job_id']); ?></td> <td class="px-4 py-3 text-indigo-600 dark:text-indigo-300 hover:underline transition duration-300 ease-in-out"> <form method="post" class="inline-block">
-                                                <input type="hidden" name="jid" value="<?php echo htmlspecialchars($r['job_id']); ?>">
-                                                <button type="submit" class="bg-transparent border-none p-0 m-0 cursor-pointer text-current hover:underline">
-                                                    <?php echo htmlspecialchars($r['title']); ?>
-                                                </button>
-                                            </form>
-                                        </td>
-                                        <?php if (isset($r['f_username'])): ?>
-                                            <td class="px-4 py-3 text-purple-700 dark:text-purple-300 hover:underline transition duration-300 ease-in-out"> <form method="post" class="inline-block">
-                                                    <input type="hidden" name="f_user" value="<?php echo htmlspecialchars($r['f_username']); ?>">
-                                                    <button type="submit" class="bg-transparent border-none p-0 m-0 cursor-pointer text-current hover:underline">
-                                                        <?php echo htmlspecialchars($r['f_username']); ?>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                             <td class="px-4 py-3 text-body-light dark:text-body-dark"><?php echo htmlspecialchars($r['price'] ?? ''); ?></td> <?php elseif (str_contains($title, 'Hire')): // Add empty cells if 'Hire' table but no freelancer ?>
-                                            <td class="px-4 py-3 text-muted">N/A</td>
-                                            <td class="px-4 py-3 text-muted">N/A</td>
-                                        <?php endif; ?>
-                                        <td class="px-4 py-3 text-muted text-sm"><?php echo htmlspecialchars($r['timestamp']); ?></td> </tr>
-                                <?php endwhile; else: ?>
-                                    <tr>
-                                        <td colspan="<?php echo str_contains($title, 'Hire') ? '5' : '3'; ?>" class="px-4 py-3 text-center text-muted">Nothing to show</td> </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <?php } ?>
+                <?php function renderTable($title, $resultSet) {
+                        if ($resultSet && $resultSet->num_rows > 0) {
+                            ?>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg transition-colors duration-1000" data-aos="fade-up">
+                                <h4 class="text-lg font-semibold text-heading mb-4"><?php echo htmlspecialchars($title); echo $resultSet; ?> </h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full table-auto">
+                                        <thead>
+                                            <tr class="border-b border-gray-200 dark:border-gray-700 transition-colors duration-1000 text-subheading">
+                                                <th class="px-4 py-2 text-left">Job ID</th>
+                                                <th class="px-4 py-2 text-left">Title</th>
+                                                <?php if (str_contains($title, 'Hire')): ?>
+                                                    <th class="px-4 py-2 text-left">Freelancer</th>
+                                                    <th class="px-4 py-2 text-left">Price</th>
+                                                <?php endif; ?>
+                                                <th class="px-4 py-2 text-left">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php while ($r = $resultSet->fetch_assoc()): ?>
+                                                <tr class="hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-300 ease-in-out">
+                                                    <td class="px-4 py-3 text-body-light dark:text-body-dark"><?php echo htmlspecialchars($r['job_id']); ?></td>
+                                                    <td class="px-4 py-3 text-indigo-600 dark:text-indigo-300 hover:underline transition duration-300 ease-in-out">
+                                                        <form method="post" class="inline-block">
+                                                            <input type="hidden" name="jid" value="<?php echo htmlspecialchars($r['job_id']); ?>">
+                                                            <button type="submit" class="bg-transparent border-none p-0 m-0 cursor-pointer text-current hover:underline">
+                                                                <?php echo htmlspecialchars($r['title']); ?>
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                    <?php if (isset($r['f_username'])): ?>
+                                                        <td class="px-4 py-3 text-purple-700 dark:text-purple-300 hover:underline transition duration-300 ease-in-out">
+                                                            <form method="post" class="inline-block">
+                                                                <input type="hidden" name="f_user" value="<?php echo htmlspecialchars($r['f_username']); ?>">
+                                                                <button type="submit" class="bg-transparent border-none p-0 m-0 cursor-pointer text-current hover:underline">
+                                                                    <?php echo htmlspecialchars($r['f_username']); ?>
+                                                                </button>
+                                                            </form>
+                                                        </td>
+                                                        <td class="px-4 py-3 text-body-light dark:text-body-dark"><?php echo htmlspecialchars($r['price'] ?? ''); ?></td>
+                                                    <?php elseif (str_contains($title, 'Hire')): ?>
+                                                        <td class="px-4 py-3 text-muted">N/A</td>
+                                                        <td class="px-4 py-3 text-muted">N/A</td>
+                                                    <?php endif; ?>
+                                                    <td class="px-4 py-3 text-muted text-sm"><?php echo htmlspecialchars($r['timestamp']); ?></td>
+                                                </tr>
+                                            <?php endwhile; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <?php
+                        } else {
+                            ?>
+                            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg transition-colors duration-1000" data-aos="fade-up">
+                                <h4 class="text-lg font-semibold text-heading mb-4"><?php echo htmlspecialchars($title); ?></h4>
+                                <div class="overflow-x-auto">
+                                    <table class="min-w-full table-auto">
+                                        <thead>
+                                            <tr class="border-b border-gray-200 dark:border-gray-700 transition-colors duration-1000 text-subheading">
+                                                <th class="px-4 py-2 text-left">Job ID</th>
+                                                <th class="px-4 py-2 text-left">Title</th>
+                                                <?php if (str_contains($title, 'Hire')): ?>
+                                                    <th class="px-4 py-2 text-left">Freelancer</th>
+                                                    <th class="px-4 py-2 text-left">Price</th>
+                                                <?php endif; ?>
+                                                <th class="px-4 py-2 text-left">Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td colspan="<?php echo str_contains($title, 'Hire') ? '5' : '3'; ?>" class="px-4 py-3 text-center text-muted">Nothing to show</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                    }
+                    ?>
 
                 <?php
                     // Render the tables
@@ -404,6 +437,7 @@ if ($curOffers === false || $prevOffers === false || $hired === false || $prevHi
                     renderTable('Previous Job Offers', $prevOffers);
                     renderTable('Current Hires', $hired); // Changed title
                     renderTable('Previous Hires', $prevHired); // Changed title
+
                 ?>
 
             </main>

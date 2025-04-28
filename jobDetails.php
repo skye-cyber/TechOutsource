@@ -518,7 +518,7 @@ if ($stmt_employer === false) {
                                             $cv_path = 'files/' . $cv_filename; // Adjust path as needed
                                             echo '<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">';
                                             if (!empty($cv_filename) && file_exists($cv_path)) { // Check if file exists
-                                                echo '<a href="' . $cv_path . '" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline dark:text-blue-400 transition duration-300">' . $cv_filename . '</a>';
+                                                echo '<a title="click to download" aria-label="click to download" href="' . $cv_path . '" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline dark:text-blue-400 transition duration-300">' . $cv_filename . '</a>';
                                             } else {
                                                  echo '<span class="text-gray-500 dark:text-gray-400">N/A</span>'; // Indicate no CV or file not found
                                             }
@@ -526,10 +526,10 @@ if ($stmt_employer === false) {
 
                                             // Cover Letter Button (Vibrant link color)
                                             echo '<td class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">';
-                                            if (!empty($cover_letter_content)) {
-                                                echo '<form action="jobDetails.php" method="post" class="inline-block">';
+                                            if (!empty($cover_letter_content) || $cv_path) {
+                                                echo '<form action="jobDetails.php" method="post" title="click to view" aria-label="click to view" class="inline-block">';
                                                 // Pass cover letter content in a hidden input (careful with large content/special chars)
-                                                echo '<input type="hidden" name="c_letter_content" value="' . htmlspecialchars($cover_letter_content) . '">'; // HTML entity encode content for value attribute
+                                                echo '<input type="hidden" name="c_letter_content" value="' . htmlspecialchars($cv_path) . '">'; // HTML entity encode content for value attribute
                                                 echo '<button type="submit" class="btn-link-form text-purple-600 hover:text-purple-800 dark:text-pink-400 dark:hover:text-pink-300 transition duration-300">View Cover Letter</button>';
                                                 echo '</form>';
                                             } else {
@@ -734,14 +734,14 @@ if ($stmt_employer === false) {
 
 
          // Close alert messages (using onclick in HTML directly for simplicity)
-         // document.querySelectorAll('[role="alert"]').forEach(function(alert) {
-         //     const closeButton = alert.querySelector('svg');
-         //     if (closeButton) {
-         //         closeButton.parentElement.addEventListener('click', function() {
-         //             alert.remove(); // or style.display = 'none';
-         //         });
-         //     }
-         // });
+         document.querySelectorAll('[role="alert"]').forEach(function(alert) {
+             const closeButton = alert.querySelector('svg');
+             if (closeButton) {
+                 closeButton.parentElement.addEventListener('click', function() {
+                     alert.remove(); // or style.display = 'none';
+                 });
+             }
+         });
 
     </script>
 </body>
